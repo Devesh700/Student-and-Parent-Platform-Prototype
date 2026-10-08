@@ -1,355 +1,2374 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
-import { Activity, ArrowLeft, ArrowRight, BookOpen, Bookmark, Check, CircleHelp, Clock3, Download, FileText, GraduationCap, HeartHandshake, Home, Languages, LockKeyhole, Menu, MessageCircle, Mic, MoreHorizontal, Play, Plus, Printer, ShieldCheck, ShoppingBag, Sparkles, Star, Users, Video, Volume2, X } from 'lucide-react';
-import { useDemoStore, type Role, type Entitlement } from './demoStore';
+import {
+  Activity,
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Bookmark,
+  Check,
+  CheckCircle2,
+  CircleHelp,
+  Clock3,
+  Download,
+  Eye,
+  FileText,
+  Filter,
+  GraduationCap,
+  HeartHandshake,
+  Home,
+  Image as ImageIcon,
+  Languages,
+  LockKeyhole,
+  MapPin,
+  Menu,
+  MessageCircle,
+  Mic,
+  MoreHorizontal,
+  PhoneCall,
+  Play,
+  Plus,
+  Printer,
+  Search,
+  Send,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Star,
+  Truck,
+  Upload,
+  Users,
+  Video,
+  Volume2,
+  X,
+  XCircle,
+} from 'lucide-react';
+import { useDemoStore, type Role, type Entitlement, type ScholarshipApplication } from './demoStore';
 
 const roles: Role[] = ['Parent', 'Student', 'Field Agent', 'Admin', 'Counsellor'];
 const entitlements: Entitlement[] = ['Free', 'Premium', 'Free Access', 'Expired'];
 const boards = ['CBSE', 'ICSE', 'Jharkhand', 'Bihar', 'Odisha', 'Chhattisgarh'];
+
 const navByRole: Record<Role, string[]> = {
-  Student: ['Home', 'Learn', 'Wellness', 'Live', 'Profile'],
+  Student: ['Home', 'Learn', 'Scholarship', 'Wellness', 'Live', 'Profile'],
   Parent: ['Home', 'Visits', 'Reports', 'Child', 'Profile'],
   'Field Agent': ['Today', 'Upcoming', 'Completed'],
   Admin: ['Overview', 'Visit queue', 'Agents', 'Scholarships', 'Content', 'Plans & orders', 'Users & payments', 'Safeguarding'],
   Counsellor: ['Today', 'Sessions', 'Availability'],
 };
+
 const journey: Record<Role, string> = {
-  Parent: 'Your family journey: request a respectful visit, then review a private report.',
-  Student: 'Your learning journey: explore your free starter pack and ask for support anytime.',
-  'Field Agent': 'Your field journey: check in, listen with care, and submit a private report.',
-  Admin: 'Your service journey: review requests, protect learners, and keep content current.',
-  Counsellor: 'Your care journey: accept a session, listen safely, and escalate when needed.',
+  Parent: 'Your family journey: request a respectful physical visit, then review a private, verified report.',
+  Student: 'Your learning journey: explore your free starter pack, apply for EWS scholarship, and find emotional support.',
+  'Field Agent': 'Your field journey: check in via GPS, observe with care, and submit a private verification report.',
+  Admin: 'Your service journey: review visit requests, manage EWS scholarships, protect learners, and curate content.',
+  Counsellor: 'Your care journey: accept sessions, listen safely, maintain private notes, and escalate risks when needed.',
 };
 
-function Button({ children, onClick, kind = 'primary', testId, className = '' }: { children: ReactNode; onClick?: () => void; kind?: 'primary' | 'secondary' | 'quiet'; testId?: string; className?: string }) {
-  return <button data-testid={testId || 'button-action'} onClick={onClick} className={`${kind === 'primary' ? 'btn-primary' : kind === 'secondary' ? 'btn-secondary' : 'btn-quiet'} inline-flex items-center justify-center gap-2 ${className}`}>{children}</button>;
+function Button({
+  children,
+  onClick,
+  kind = 'primary',
+  testId,
+  className = '',
+  disabled = false,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  kind?: 'primary' | 'secondary' | 'quiet' | 'danger';
+  testId?: string;
+  className?: string;
+  disabled?: boolean;
+}) {
+  const base =
+    kind === 'primary'
+      ? 'btn-primary'
+      : kind === 'secondary'
+      ? 'btn-secondary'
+      : kind === 'danger'
+      ? 'bg-[#c85a4b] text-white hover:bg-[#b34c3e]'
+      : 'btn-quiet';
+  return (
+    <button
+      disabled={disabled}
+      data-testid={testId || 'button-action'}
+      onClick={onClick}
+      className={`${base} inline-flex items-center justify-center gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+    >
+      {children}
+    </button>
+  );
 }
-function Card({ children, className = '' }: { children: ReactNode; className?: string }) { return <section className={`surface p-5 ${className}`}>{children}</section>; }
-function Label({ children }: { children: ReactNode }) { return <label className="field-label">{children}</label>; }
-function Tag({ children, gold = false, red = false }: { children: ReactNode; gold?: boolean; red?: boolean }) { return <span className={`tag ${gold ? 'tag-gold' : ''} ${red ? 'tag-red' : ''}`}>{children}</span>; }
 
-function AppShell() {
-  const role = useDemoStore(s => s.role);
-  const entitlement = useDemoStore(s => s.entitlement);
-  const language = useDemoStore(s => s.language);
-  const page = useDemoStore(s => s.activePage);
-  const set = useDemoStore(s => s.set);
-  const reset = useDemoStore(s => s.reset);
+function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <section className={`surface p-5 ${className}`}>{children}</section>;
+}
+
+function Label({ children }: { children: ReactNode }) {
+  return <label className="field-label">{children}</label>;
+}
+
+function Tag({ children, gold = false, red = false, green = false }: { children: ReactNode; gold?: boolean; red?: boolean; green?: boolean }) {
+  return (
+    <span
+      className={`tag ${
+        gold ? 'tag-gold' : red ? 'tag-red' : green ? 'bg-[#e3eee1] text-[#2c533e] border border-[#c1dac2]' : ''
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function AppShell() {
+  const role = useDemoStore((s) => s.role);
+  const entitlement = useDemoStore((s) => s.entitlement);
+  const language = useDemoStore((s) => s.language);
+  const page = useDemoStore((s) => s.activePage);
+  const set = useDemoStore((s) => s.set);
+  const reset = useDemoStore((s) => s.reset);
+  const consent = useDemoStore((s) => s.consent);
+  const showStarterCelebration = useDemoStore((s) => s.showStarterCelebration);
+
   const [mobileMenu, setMobileMenu] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [notice, setNotice] = useState('');
   const [location, navigate] = useLocation();
+
   useEffect(() => {
-    const open = () => setShowHelp(true);
+    const openHelp = () => setShowHelp(true);
     const onboard = () => setShowOnboarding(true);
-    window.addEventListener('educare-help', open);
+    window.addEventListener('educare-help', openHelp);
     window.addEventListener('educare-onboarding', onboard);
     return () => {
-      window.removeEventListener('educare-help', open);
+      window.removeEventListener('educare-help', openHelp);
       window.removeEventListener('educare-onboarding', onboard);
     };
   }, []);
+
   if (location === '/confirm') return <ConfirmPage />;
+
   const nav = navByRole[role];
-  const selectPage = (p: string) => { set({ activePage: p, activeSubpage: '' }); setMobileMenu(false); };
-  return <div className="app-shell">
-    <header className="sticky top-0 z-30 border-b border-[#e2e7dd] bg-[#f8f7f0]/95 backdrop-blur">
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-3 md:px-8">
-        <button onClick={() => { navigate('/'); selectPage(role === 'Student' ? 'Home' : role === 'Parent' ? 'Home' : nav[0]); }} className="flex items-center gap-2.5" data-testid="button-brand-home">
-          <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#294b41] text-[#f9e9c5]"><HeartHandshake size={21}/></span>
-          <span className="text-left"><strong className="block font-[Manrope] text-[17px] leading-none tracking-tight">EduCare</strong><span className="mt-1 block text-[9px] font-bold uppercase tracking-[.17em] text-[#74877b]">A family companion</span></span>
-        </button>
-        <div className="hidden items-center gap-2 text-[11px] font-semibold text-[#6d8074] md:flex"><ShieldCheck size={15}/> Demo only · Fictional data · No services connected</div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => set({ language: language === 'English' ? 'हिन्दी' : 'English' })} className="btn-quiet flex items-center gap-1.5 !px-2.5 !py-2 text-xs" data-testid="button-language-toggle"><Languages size={15}/><span>{language === 'English' ? 'EN' : 'हिन्दी'}</span></button>
-          <button onClick={() => setMobileMenu(!mobileMenu)} className="rounded-xl border border-[#dce4dc] p-2.5 md:hidden" aria-label="Open navigation" data-testid="button-open-menu"><Menu size={19}/></button>
+  const selectPage = (p: string) => {
+    set({ activePage: p, activeSubpage: '' });
+    setMobileMenu(false);
+  };
+
+  return (
+    <div className="app-shell pb-20 md:pb-8">
+      <header className="sticky top-0 z-30 border-b border-[#e2e7dd] bg-[#f8f7f0]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-3 md:px-8">
+          <button
+            onClick={() => {
+              navigate('/');
+              selectPage(role === 'Student' ? 'Home' : role === 'Parent' ? 'Home' : nav[0]);
+            }}
+            className="flex items-center gap-2.5 text-left"
+            data-testid="button-brand-home"
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-[14px] bg-[#294b41] text-[#f9e9c5]">
+              <HeartHandshake size={21} />
+            </span>
+            <span>
+              <strong className="block font-[Manrope] text-[17px] leading-none tracking-tight">EduCare</strong>
+              <span className="mt-1 block text-[9px] font-bold uppercase tracking-[.17em] text-[#74877b]">A family companion</span>
+            </span>
+          </button>
+
+          <div className="hidden items-center gap-2 text-[11px] font-semibold text-[#6d8074] md:flex">
+            <ShieldCheck size={15} /> Demo Prototype · Interactive Client Walkthrough
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => set({ language: language === 'English' ? 'हिन्दी' : 'English' })}
+              className="btn-quiet flex items-center gap-1.5 !px-2.5 !py-2 text-xs"
+              data-testid="button-language-toggle"
+            >
+              <Languages size={15} />
+              <span>{language === 'English' ? 'EN' : 'हिन्दी'}</span>
+            </button>
+            <button
+              onClick={() => setMobileMenu(!mobileMenu)}
+              className="rounded-xl border border-[#dce4dc] p-2.5 md:hidden"
+              aria-label="Open navigation"
+              data-testid="button-open-menu"
+            >
+              <Menu size={19} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto grid max-w-[1440px] gap-5 px-3 pb-8 pt-4 md:grid-cols-[238px_minmax(0,1fr)] md:px-8 md:pt-7">
+        <aside className={`${mobileMenu ? 'block' : 'hidden'} md:block`}>
+          <div className="sticky top-[84px] space-y-4">
+            <div className="demo-panel rounded-[20px] p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="eyebrow !text-[#c9d6c9]">Demo controls</span>
+                <MoreHorizontal size={16} className="text-[#c9d6c9]" />
+              </div>
+              <Label>Preview as Role</Label>
+              <select
+                aria-label="Preview role"
+                data-testid="select-role"
+                className="field mb-3 !border-white/15 !bg-white/10 !text-[#fffdf6]"
+                value={role}
+                onChange={(e) => {
+                  const r = e.target.value as Role;
+                  set({ role: r, activePage: navByRole[r][0], activeSubpage: '' });
+                  setMobileMenu(false);
+                }}
+              >
+                {roles.map((r) => (
+                  <option key={r} value={r} className="text-[#203d36]">
+                    {r}
+                  </option>
+                ))}
+              </select>
+
+              <Label>Entitlement State</Label>
+              <select
+                aria-label="Preview entitlement"
+                data-testid="select-entitlement"
+                className="field !border-white/15 !bg-white/10 !text-[#fffdf6]"
+                value={entitlement}
+                onChange={(e) => set({ entitlement: e.target.value as Entitlement })}
+              >
+                {entitlements.map((e) => (
+                  <option key={e} value={e} className="text-[#203d36]">
+                    {e}
+                  </option>
+                ))}
+              </select>
+
+              <div className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-[11px] leading-4 text-[#d7e1d8]">
+                <span className="font-bold text-[#f6e9cb]">{role}</span> · {entitlement}{' '}
+                {consent ? <span className="text-[#a4e2b8]">(Consent Active)</span> : <span className="text-[#e8b5a0]">(Consent Pending)</span>}
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  className="rounded-xl bg-white/10 px-2 py-2 text-[10px] font-bold text-[#f7f1e3] hover:bg-white/15"
+                  data-testid="button-fast-forward-scholarship"
+                  onClick={() => {
+                    const all = useDemoStore.getState().scholarships;
+                    set({
+                      entitlement: 'Free Access',
+                      approved: true,
+                      scholarships: all.map((s, i) => (i === 0 ? { ...s, status: 'Approved · 90 days' } : s)),
+                    });
+                    setNotice('Fast-forward: Scholarship approved. Entitlement set to Free Access!');
+                  }}
+                >
+                  Fast-forward EWS
+                </button>
+                <button
+                  className="rounded-xl bg-white/10 px-2 py-2 text-[10px] font-bold text-[#f7f1e3] hover:bg-white/15"
+                  data-testid="button-reset-demo"
+                  onClick={() => {
+                    reset();
+                    set({ activePage: 'Home' });
+                    setNotice('Demo state reset to defaults.');
+                  }}
+                >
+                  Reset demo
+                </button>
+              </div>
+            </div>
+
+            <nav className="surface p-2.5" aria-label={`${role} navigation`}>
+              <div className="px-3 pb-2 pt-1 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#89978c]">
+                {role} Workspace
+              </div>
+              {nav.map((n) => (
+                <button
+                  key={n}
+                  onClick={() => selectPage(n)}
+                  className={`nav-item ${page === n ? 'active' : ''}`}
+                  data-testid={`nav-${n.toLowerCase().replaceAll(' ', '-')}`}
+                >
+                  {getIconForNav(role, n)}
+                  {n}
+                  {n === 'Safeguarding' && <span className="ml-auto h-2 w-2 rounded-full bg-[#c87562]" />}
+                </button>
+              ))}
+              <div className="mt-2 border-t border-[#e8ebe4] pt-2">
+                <Link href="/confirm" className="nav-item" data-testid="link-confirm-checklist">
+                  <Check size={17} />
+                  Client Checklist
+                </Link>
+              </div>
+            </nav>
+
+            <Card className="!p-4">
+              <div className="flex items-start gap-2.5">
+                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f5e7c8]">
+                  <CircleHelp size={16} />
+                </div>
+                <div>
+                  <p className="text-[12px] font-bold">Need assistance?</p>
+                  <p className="mt-1 text-[11px] leading-4 text-[#738278]">Safety & helplines always available.</p>
+                  <button
+                    onClick={() => setShowHelp(true)}
+                    className="mt-2 text-[11px] font-extrabold text-[#294b41] underline underline-offset-2"
+                    data-testid="button-help-sidebar"
+                  >
+                    Helpline Directory
+                  </button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </aside>
+
+        <main className="min-w-0">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#e1e7dd] bg-[#eef2e9] px-4 py-3">
+            <p data-testid="text-journey-guide" className="text-[12px] leading-5 text-[#526b5e]">
+              <Sparkles size={14} className="mr-1.5 inline text-[#b28743]" />
+              {journey[role]}
+            </p>
+            <button
+              onClick={() => setShowOnboarding(true)}
+              className="text-[11px] font-extrabold text-[#294b41] underline underline-offset-2"
+              data-testid="button-onboarding-toggle"
+            >
+              Start Onboarding Flow
+            </button>
+          </div>
+
+          <RoleScreen role={role} page={page} notify={setNotice} />
+
+          {role === 'Student' && (
+            <button
+              onClick={() => setShowHelp(true)}
+              className="fixed bottom-20 right-4 z-20 flex h-12 items-center gap-2 rounded-full bg-[#c57f61] px-4 text-white shadow-lg md:bottom-7 md:right-8"
+              aria-label="I need help now"
+              data-testid="button-always-visible-help"
+            >
+              <CircleHelp size={20} />
+              <span className="text-xs font-bold">I need help now</span>
+            </button>
+          )}
+
+          {notice && (
+            <div
+              role="status"
+              data-testid="status-feedback"
+              className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-[#24483e] px-5 py-3 text-sm font-semibold text-white shadow-xl flex items-center gap-3"
+            >
+              <span>{notice}</span>
+              <button onClick={() => setNotice('')} aria-label="Dismiss message">
+                <X size={16} />
+              </button>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#e2e7dd] bg-[#f8f7f0]/95 backdrop-blur md:hidden">
+        <div className="flex justify-around p-2">
+          {nav.slice(0, 5).map((n) => (
+            <button
+              key={n}
+              onClick={() => selectPage(n)}
+              className={`flex flex-col items-center gap-1 p-1 text-[10px] font-bold ${
+                page === n ? 'text-[#294b41]' : 'text-[#738278]'
+              }`}
+            >
+              {getIconForNav(role, n)}
+              <span>{n}</span>
+            </button>
+          ))}
         </div>
       </div>
-    </header>
-    <div className="mx-auto grid max-w-[1440px] gap-5 px-3 pb-8 pt-4 md:grid-cols-[238px_minmax(0,1fr)] md:px-8 md:pt-7">
-      <aside className={`${mobileMenu ? 'block' : 'hidden'} md:block`}>
-        <div className="sticky top-[84px] space-y-4">
-          <div className="demo-panel rounded-[20px] p-4">
-            <div className="mb-3 flex items-center justify-between"><span className="eyebrow !text-[#c9d6c9]">Demo controls</span><MoreHorizontal size={16} className="text-[#c9d6c9]"/></div>
-            <Label>Preview as</Label>
-            <select aria-label="Preview role" data-testid="select-role" className="field mb-3 !border-white/15 !bg-white/10 !text-[#fffdf6]" value={role} onChange={e => { set({ role: e.target.value as Role, activePage: navByRole[e.target.value as Role][0], activeSubpage: '' }); setMobileMenu(false); }}>
-              {roles.map(r => <option key={r} value={r} className="text-[#203d36]">{r}</option>)}
-            </select>
-            <Label>Access level</Label>
-            <select aria-label="Preview entitlement" data-testid="select-entitlement" className="field !border-white/15 !bg-white/10 !text-[#fffdf6]" value={entitlement} onChange={e => set({ entitlement: e.target.value as Entitlement })}>
-              {entitlements.map(e => <option key={e} value={e} className="text-[#203d36]">{e}</option>)}
-            </select>
-            <div className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-[11px] leading-4 text-[#d7e1d8]"><span className="font-bold text-[#f6e9cb]">{role}</span> · {entitlement}</div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button className="rounded-xl bg-white/10 px-2 py-2 text-[10px] font-bold text-[#f7f1e3] hover:bg-white/15" data-testid="button-fast-forward-scholarship" onClick={() => { const all = useDemoStore.getState().scholarships; set({ entitlement: 'Free Access', approved: true, scholarships: all.map((s, i) => i === 0 ? { ...s, status: 'Approved · 90 days' } : s) }); }}>Fast-forward scholarship</button>
-              <button className="rounded-xl bg-white/10 px-2 py-2 text-[10px] font-bold text-[#f7f1e3] hover:bg-white/15" data-testid="button-reset-demo" onClick={() => { reset(); set({ activePage: 'Home' }); }}>Reset demo data</button>
-            </div>
-          </div>
-          <nav className="surface p-2.5" aria-label={`${role} navigation`}>
-            <div className="px-3 pb-2 pt-1 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#89978c]">{role} workspace</div>
-            {nav.map((n, i) => <button key={n} onClick={() => selectPage(n)} className={`nav-item ${page === n ? 'active' : ''}`} data-testid={`nav-${n.toLowerCase().replaceAll(' ', '-')}`}>
-              {role === 'Student' ? [<Home size={17}/>, <BookOpen size={17}/>, <HeartHandshake size={17}/>, <Video size={17}/>, <Users size={17}/>][i] : role === 'Parent' ? [<Home size={17}/>, <Clock3 size={17}/>, <FileText size={17}/>, <GraduationCap size={17}/>, <Users size={17}/>][i] : <span className="w-[17px] text-center">{String(i + 1).padStart(2, '0')}</span>}
-              {n}{n === 'Safeguarding' && <span className="ml-auto h-2 w-2 rounded-full bg-[#c87562]"/>}
-            </button>)}
-            <div className="mt-2 border-t border-[#e8ebe4] pt-2">
-              <Link href="/confirm" className="nav-item" data-testid="link-confirm-checklist"><Check size={17}/>Client checklist</Link>
-            </div>
-          </nav>
-          <Card className="!p-4">
-            <div className="flex items-start gap-2.5"><div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f5e7c8]"><CircleHelp size={16}/></div><div><p className="text-[12px] font-bold">Need a hand?</p><p className="mt-1 text-[11px] leading-4 text-[#738278]">Support is always close by.</p><button onClick={() => setShowHelp(true)} className="mt-2 text-[11px] font-extrabold text-[#294b41] underline underline-offset-2" data-testid="button-help-sidebar">View support options</button></div></div>
-          </Card>
-        </div>
-      </aside>
-      <main className="min-w-0">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#e1e7dd] bg-[#eef2e9] px-4 py-3">
-          <p data-testid="text-journey-guide" className="text-[12px] leading-5 text-[#526b5e]"><Sparkles size={14} className="mr-1.5 inline text-[#b28743]"/>{journey[role]}</p>
-          <button onClick={() => setShowOnboarding(!showOnboarding)} className="text-[11px] font-extrabold text-[#294b41] underline underline-offset-2" data-testid="button-onboarding-toggle">Onboarding flow</button>
-        </div>
-        {showOnboarding ? <Onboarding close={() => setShowOnboarding(false)} /> : <RoleScreen role={role} page={page} notify={setNotice} />}
-        {role === 'Student' && <button onClick={() => setShowHelp(true)} className="fixed bottom-4 right-4 z-20 grid h-14 w-14 place-items-center rounded-full bg-[#c57f61] text-white shadow-lg md:bottom-7 md:right-8" aria-label="Get help" data-testid="button-always-visible-help"><CircleHelp size={23}/></button>}
-        {notice && <div role="status" data-testid="status-feedback" className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-[#24483e] px-5 py-3 text-sm font-semibold text-white shadow-xl">{notice}<button className="ml-4 opacity-70" onClick={() => setNotice('')} aria-label="Dismiss message"><X size={14}/></button></div>}
-      </main>
+
+      {showOnboarding && <Onboarding close={() => setShowOnboarding(false)} notify={setNotice} />}
+      {showHelp && <HelpSheet close={() => setShowHelp(false)} notify={setNotice} />}
+      {showStarterCelebration && <StarterPackCelebrationModal close={() => set({ showStarterCelebration: false })} />}
     </div>
-    {showHelp && <HelpSheet close={() => setShowHelp(false)} notify={setNotice}/>}
-  </div>;
+  );
+}
+
+function getIconForNav(role: Role, name: string) {
+  if (role === 'Student') {
+    if (name === 'Home') return <Home size={17} />;
+    if (name === 'Learn') return <BookOpen size={17} />;
+    if (name === 'Scholarship') return <GraduationCap size={17} />;
+    if (name === 'Wellness') return <HeartHandshake size={17} />;
+    if (name === 'Live') return <Video size={17} />;
+    return <Users size={17} />;
+  }
+  if (role === 'Parent') {
+    if (name === 'Home') return <Home size={17} />;
+    if (name === 'Visits') return <Clock3 size={17} />;
+    if (name === 'Reports') return <FileText size={17} />;
+    if (name === 'Child') return <GraduationCap size={17} />;
+    return <Users size={17} />;
+  }
+  return <Sparkles size={17} />;
 }
 
 function RoleScreen({ role, page, notify }: { role: Role; page: string; notify: (s: string) => void }) {
-  if (role === 'Student') return <StudentScreen page={page} notify={notify}/>;
-  if (role === 'Parent') return <ParentScreen page={page} notify={notify}/>;
-  if (role === 'Field Agent') return <AgentScreen page={page} notify={notify}/>;
-  if (role === 'Admin') return <AdminScreen page={page} notify={notify}/>;
-  return <CounsellorScreen page={page} notify={notify}/>;
+  if (role === 'Student') return <StudentScreen page={page} notify={notify} />;
+  if (role === 'Parent') return <ParentScreen page={page} notify={notify} />;
+  if (role === 'Field Agent') return <AgentScreen page={page} notify={notify} />;
+  if (role === 'Admin') return <AdminScreen page={page} notify={notify} />;
+  return <CounsellorScreen page={page} notify={notify} />;
 }
 
 function PageHeading({ eyebrow, title, subtitle, action }: { eyebrow: string; title: string; subtitle: string; action?: ReactNode }) {
-  return <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><div className="eyebrow mb-1.5">{eyebrow}</div><h1 className="text-[28px] font-extrabold leading-tight md:text-[36px]">{title}</h1><p className="mt-1 max-w-2xl text-[13px] leading-5 text-[#728078]">{subtitle}</p></div>{action}</div>;
+  return (
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <div className="eyebrow mb-1.5">{eyebrow}</div>
+        <h1 className="text-[28px] font-extrabold leading-tight md:text-[34px]">{title}</h1>
+        <p className="mt-1 max-w-2xl text-[13px] leading-5 text-[#728078]">{subtitle}</p>
+      </div>
+      {action}
+    </div>
+  );
 }
+
+/* ==================== STUDENT WORKSPACE ==================== */
+
 function StudentScreen({ page, notify }: { page: string; notify: (s: string) => void }) {
-  const entitlement = useDemoStore(s => s.entitlement);
-  const student = useDemoStore(s => s.student);
-  const set = useDemoStore(s => s.set);
-  const consent = useDemoStore(s => s.consent);
-  const mood = useDemoStore(s => s.mood);
-  const [selected, setSelected] = useState('CBSE');
-  const [subject, setSubject] = useState('Maths');
-  const [topic, setTopic] = useState('');
+  const entitlement = useDemoStore((s) => s.entitlement);
+  const student = useDemoStore((s) => s.student);
+  const set = useDemoStore((s) => s.set);
+  const consent = useDemoStore((s) => s.consent);
+  const mood = useDemoStore((s) => s.mood);
+  const orders = useDemoStore((s) => s.orders);
+
+  const [selectedBoard, setSelectedBoard] = useState(student.board || 'CBSE');
+  const [selectedSubject, setSelectedSubject] = useState('Maths');
+  const [topic, setTopic] = useState('Pair of linear equations');
   const [contentTab, setContentTab] = useState('Video');
   const [chatOpen, setChatOpen] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [pageNo, setPageNo] = useState(1);
   const [speed, setSpeed] = useState('1×');
   const [paywallOpen, setPaywallOpen] = useState(false);
-  const [deliveryAddress, setDeliveryAddress] = useState('12 Lake Road, Ranchi');
+  const [deliveryAddress, setDeliveryAddress] = useState('12 Lake Road, Ranchi Hostel');
+  const [activeLightboxImage, setActiveLightboxImage] = useState<string | null>(null);
+
   const locked = entitlement === 'Free' || entitlement === 'Expired';
-  if (page === 'Learn' && !consent) return <><PageHeading eyebrow="Learning space" title="A parent’s yes comes first." subtitle="The free starter pack is ready once a parent or guardian confirms consent."/><Card className="mx-auto max-w-xl text-center !bg-[#f5ead2]"><ShieldCheck size={29} className="mx-auto text-[#7e714f]"/><h2 className="mt-3 text-2xl font-extrabold">Learning unlocks with consent.</h2><p className="mt-2 text-sm leading-6 text-[#746c59]">3 counselling videos, 2 board masterclasses and 3 sample PDFs are included after a guardian confirms.</p><Button className="mt-4" onClick={()=>window.dispatchEvent(new Event('educare-onboarding'))}>Continue guardian consent</Button></Card></>;
-  if (page === 'Learn') return <><PageHeading eyebrow="Your learning space" title="Find your next step." subtitle="Choose a board, class and subject. Start with a short lesson, or read at your own pace."/><Card>
-    <div className="grid gap-3 sm:grid-cols-4">
-      <label><Label>Board</Label><select className="field" value={selected} onChange={e => setSelected(e.target.value)}>{boards.map(b => <option key={b}>{b}</option>)}</select></label>
-      <label><Label>Class</Label><select className="field" value={student.className} onChange={e => set({ student: { ...student, className: e.target.value } })}>{Array.from({ length: 7 }, (_, i) => <option key={i}>{i + 6}</option>)}</select></label>
-      <label><Label>Subject</Label><select className="field" value={subject} onChange={e => setSubject(e.target.value)}><option>Maths</option><option>Science</option><option>Physics</option><option>English</option></select></label>
-      <label><Label>Chapter</Label><select className="field"><option>Chapter 4 · Linear equations</option><option>Chapter 2 · Real numbers</option><option>Chapter 5 · Our environment</option></select></label>
-    </div>
-    <div className="mt-4 flex flex-wrap gap-2 text-[11px]"><Tag>{selected}</Tag><Tag>Class {student.className}</Tag><Tag>{subject}</Tag><Tag>Chapter 4</Tag></div>
-  </Card>
-  <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,.8fr)]">
-    <Card className="!p-0 overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[#e9ece5] px-5 py-4"><div><p className="eyebrow">Topic · 12 min</p><h2 className="mt-1 text-xl font-extrabold">{topic || 'Pair of linear equations'}</h2></div><Bookmark size={18} className="text-[#7b8b7d]"/></div>
-      <div className="tab-scroll flex gap-2 overflow-x-auto border-b border-[#e9ece5] px-4 py-3">{['Video', 'PDF', 'Print', 'Images'].map(t => <button onClick={() => setContentTab(t)} key={t} className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold ${contentTab === t ? 'bg-[#294b41] text-white' : 'bg-[#f0f2ed] text-[#667b70]'}`} data-testid={`tab-${t.toLowerCase()}`}>{t}</button>)}</div>
-      {locked && !['Video', 'PDF'].includes(contentTab) ? <div className="p-7 text-center"><LockKeyhole size={24} className="mx-auto mb-3 text-[#b18a4d]"/><h3 className="text-lg font-bold">This topic is part of Premium</h3><p className="mt-1 text-sm text-[#758379]">Unlock print packs and topic images when your family is ready.</p><Button onClick={() => setPaywallOpen(true)}>See plans</Button></div> :
-      contentTab === 'Video' ? <div className="p-4">
-        <div className="relative grid aspect-video place-items-center overflow-hidden rounded-[17px] bg-[#dce7db] text-center">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_34%,#f5e7c8_0_12%,transparent_12.5%),linear-gradient(135deg,#cadccf,#e7eee3)]"/>
-          <div className="relative z-10 max-w-xs"><div className="mx-auto mb-2 grid h-14 w-14 place-items-center rounded-full bg-[#294b41] text-white"><Play size={21} fill="currentColor"/></div><p className="font-[Manrope] text-xl font-extrabold">A clearer way to solve</p><p className="mt-1 text-xs text-[#60776b]">Video lesson · Watermarked for Aarav</p></div>
-          <span className="absolute bottom-3 left-4 text-[10px] font-bold text-[#355648]">EDUCARE · AARAV S.</span>
+
+  if (page === 'Learn' && !consent) {
+    return (
+      <>
+        <PageHeading
+          eyebrow="Learning space"
+          title="Parent consent unlocks the free starter pack."
+          subtitle="Under Indian data guidance, a parent or guardian confirms consent before minor student features unlock."
+        />
+        <Card className="mx-auto max-w-xl text-center !bg-[#f5ead2] !p-8">
+          <ShieldCheck size={36} className="mx-auto text-[#7e714f]" />
+          <h2 className="mt-3 text-2xl font-extrabold text-[#3a3221]">Learning unlocks with consent.</h2>
+          <p className="mt-2 text-sm leading-6 text-[#746c59]">
+            3 counselling videos, 2 board masterclasses, and 3 sample PDF notes are ready as soon as your parent confirms.
+          </p>
+          <Button className="mt-5" onClick={() => window.dispatchEvent(new Event('educare-onboarding'))}>
+            Complete Guardian Consent Now
+          </Button>
+        </Card>
+      </>
+    );
+  }
+
+  if (page === 'Learn') {
+    const isSeeded =
+      (selectedBoard === 'CBSE' && (selectedSubject === 'Maths' || selectedSubject === 'Science') && student.className === '10') ||
+      (selectedBoard === 'Bihar' && selectedSubject === 'Maths' && student.className === '10') ||
+      (selectedBoard === 'ICSE' && selectedSubject === 'Physics' && student.className === '11');
+
+    return (
+      <>
+        <PageHeading
+          eyebrow="Your learning space"
+          title="Explore lessons across 6 boards & 7 classes."
+          subtitle="Move smoothly between Video, PDF, Print, and Infographic formats."
+        />
+
+        <Card>
+          <div className="grid gap-3 sm:grid-cols-4">
+            <div>
+              <Label>Board</Label>
+              <select className="field" value={selectedBoard} onChange={(e) => setSelectedBoard(e.target.value)}>
+                {boards.map((b) => (
+                  <option key={b}>{b}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Class</Label>
+              <select
+                className="field"
+                value={student.className}
+                onChange={(e) => set({ student: { ...student, className: e.target.value } })}
+              >
+                {Array.from({ length: 7 }, (_, i) => (
+                  <option key={i}>{i + 6}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Subject</Label>
+              <select className="field" value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)}>
+                <option>Maths</option>
+                <option>Science</option>
+                <option>Physics</option>
+                <option>English</option>
+                <option>Hindi</option>
+              </select>
+            </div>
+            <div>
+              <Label>Chapter</Label>
+              <select className="field">
+                <option>Chapter 4 · Linear Equations</option>
+                <option>Chapter 2 · Real Numbers</option>
+                <option>Chapter 5 · Light & Optics</option>
+              </select>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+            <Tag gold>{selectedBoard}</Tag>
+            <Tag>Class {student.className}</Tag>
+            <Tag>{selectedSubject}</Tag>
+            {isSeeded ? <Tag green>Syllabus Available</Tag> : <Tag red>Content Coming Soon</Tag>}
+          </div>
+        </Card>
+
+        {!isSeeded ? (
+          <Card className="mt-4 bg-[#f8f1e2] text-center !p-8">
+            <BookOpen size={32} className="mx-auto text-[#a88243]" />
+            <h3 className="mt-3 text-xl font-extrabold text-[#473c26]">Content coming soon</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756852]">
+              Our academic team is curating verified lessons for {selectedBoard} Board Class {student.className} {selectedSubject}. Tapping notify will log your preference!
+            </p>
+            <Button className="mt-4" onClick={() => notify(`Notification request logged for ${selectedBoard} Class ${student.className} ${selectedSubject}`)}>
+              Notify me when published
+            </Button>
+          </Card>
+        ) : (
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(270px,.8fr)]">
+            <Card className="!p-0 overflow-hidden">
+              <div className="flex items-center justify-between border-b border-[#e9ece5] px-5 py-4">
+                <div>
+                  <p className="eyebrow">Topic · 12 min lesson</p>
+                  <h2 className="mt-1 text-xl font-extrabold">{topic}</h2>
+                </div>
+                <button onClick={() => notify('Topic saved to your offline bookmark list')} aria-label="Bookmark">
+                  <Bookmark size={20} className="text-[#7b8b7d]" />
+                </button>
+              </div>
+
+              <div className="tab-scroll flex gap-2 overflow-x-auto border-b border-[#e9ece5] px-4 py-3">
+                {['Video', 'PDF', 'Print', 'Images'].map((t) => (
+                  <button
+                    onClick={() => setContentTab(t)}
+                    key={t}
+                    className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                      contentTab === t ? 'bg-[#294b41] text-white' : 'bg-[#f0f2ed] text-[#667b70] hover:bg-[#e4e9e1]'
+                    }`}
+                    data-testid={`tab-${t.toLowerCase()}`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+
+              {locked && ['Print', 'Images'].includes(contentTab) ? (
+                <div className="p-8 text-center">
+                  <LockKeyhole size={28} className="mx-auto mb-3 text-[#b18a4d]" />
+                  <h3 className="text-lg font-bold">This tab is part of Premium</h3>
+                  <p className="mt-1 text-sm text-[#758379]">Unlock print workbooks and diagram galleries when your family is ready.</p>
+                  <Button className="mt-4" onClick={() => setPaywallOpen(true)}>
+                    View Plans & Options
+                  </Button>
+                </div>
+              ) : contentTab === 'Video' ? (
+                <div className="p-4">
+                  <div className="relative grid aspect-video place-items-center overflow-hidden rounded-[17px] bg-[#223932] text-center text-white">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_34%,#3b6558_0_15%,transparent_16%),linear-gradient(135deg,#1f362e,#2f4f44)]" />
+                    <div className="relative z-10 max-w-xs p-4">
+                      <button
+                        onClick={() => notify('Video playing in demo player')}
+                        className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-[#f9e9c5] text-[#294b41] shadow-md transition-transform hover:scale-105"
+                      >
+                        <Play size={24} fill="currentColor" className="ml-1" />
+                      </button>
+                      <p className="font-[Manrope] text-lg font-extrabold">{topic}</p>
+                      <p className="mt-1 text-xs text-[#b8ccc0]">CBSE Class 10 Maths · 12:10</p>
+                    </div>
+                    {/* Watermark */}
+                    <span className="absolute bottom-3 left-4 text-[10px] font-bold tracking-widest text-[#a1c4b4] opacity-80">
+                      EDUCARE · {student.name.toUpperCase()} · {student.id}
+                    </span>
+                    <span className="absolute top-3 right-3 text-[10px] bg-black/40 backdrop-blur px-2 py-1 rounded text-[#e0e8e3]">
+                      Dynamic Watermark Active
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex gap-2">
+                      <Button kind="quiet" onClick={() => notify('Lesson resumed from 04:32')}>
+                        <Play size={14} /> Resume (04:32)
+                      </Button>
+                      <button
+                        className="btn-quiet !px-3 text-xs"
+                        onClick={() => setSpeed(speed === '1×' ? '1.25×' : speed === '1.25×' ? '1.5×' : '1×')}
+                      >
+                        Speed: {speed}
+                      </button>
+                    </div>
+                    <span className="text-xs text-[#809087]">04:32 / 12:10</span>
+                  </div>
+                </div>
+              ) : contentTab === 'PDF' ? (
+                <div className="p-4">
+                  <div className="flex items-center justify-between rounded-t-xl bg-[#e8eee6] p-3 text-xs">
+                    <span className="font-bold">Summary Notes · Page {pageNo} of 6</span>
+                    <div className="flex items-center gap-2">
+                      <button className="rounded p-1 hover:bg-white" onClick={() => setZoom(Math.max(75, zoom - 10))}>
+                        -
+                      </button>
+                      <span>{zoom}%</span>
+                      <button className="rounded p-1 hover:bg-white" onClick={() => setZoom(Math.min(150, zoom + 10))}>
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    className="relative min-h-[220px] border-x border-[#e5e8df] bg-[#fffefa] px-8 py-7 text-center shadow-inner"
+                    style={{ fontSize: `${zoom}%` }}
+                  >
+                    {/* Watermark overlay */}
+                    <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-10">
+                      <span className="rotate-[-25deg] text-3xl font-extrabold text-[#294b41]">
+                        {student.name} · {student.id}
+                      </span>
+                    </div>
+
+                    <div className="eyebrow">{selectedSubject} · Class {student.className}</div>
+                    <h3 className="mt-3 text-xl font-extrabold text-[#253d34]">{topic}</h3>
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#5b6e63]">
+                      To solve two linear equations simultaneously, isolate one variable in terms of the other and substitute it into the second equation.
+                    </p>
+                    <div className="mx-auto mt-4 w-fit rounded-lg bg-[#eff3eb] px-6 py-3 font-mono text-sm font-bold text-[#294b41]">
+                      ax + by + c = 0
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-b-xl bg-[#e8eee6] p-3">
+                    <button className="btn-quiet !py-1.5 text-xs" onClick={() => setPageNo(Math.max(1, pageNo - 1))}>
+                      Previous
+                    </button>
+                    <span className="text-xs text-[#687c70]">{pageNo} / 6</span>
+                    <button className="btn-quiet !py-1.5 text-xs" onClick={() => setPageNo(Math.min(6, pageNo + 1))}>
+                      Next
+                    </button>
+                  </div>
+                  <p className="mt-2 text-center text-[10px] text-[#86948a]">In-app viewer · Direct PDF downloads restricted for content protection</p>
+                </div>
+              ) : contentTab === 'Print' ? (
+                <div className="p-5">
+                  <div className="flex gap-4">
+                    <div className="grid h-28 w-24 shrink-0 place-items-center rounded-xl bg-[#f4e7c9]">
+                      <Printer size={32} className="text-[#63512e]" />
+                    </div>
+                    <div>
+                      <Tag gold>Printed Workbook</Tag>
+                      <h3 className="mt-2 font-bold text-lg">Class 10 Maths Practice Book</h3>
+                      <p className="mt-1 text-xs leading-5 text-[#718177]">High-quality physical workbook delivered directly to your hostel/home.</p>
+                      <p className="mt-2 text-xl font-extrabold text-[#294b41]">₹149</p>
+                    </div>
+                  </div>
+
+                  <label className="mt-4 block">
+                    <Label>Delivery Address</Label>
+                    <input className="field" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} />
+                  </label>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {student.age < 18 ? (
+                      <Button kind="secondary" onClick={() => notify('Parent-pay link shared: "Ask Parent to Pay for Printed Workbook"')}>
+                        Ask Parent to Pay (Minor Rule)
+                      </Button>
+                    ) : (
+                      <Button onClick={() => notify('Order placed! Demo payment successful.')}>Pay & Order (₹149)</Button>
+                    )}
+                  </div>
+
+                  {orders.length > 0 && (
+                    <div className="mt-5 border-t border-[#e8ebe4] pt-4">
+                      <h4 className="font-bold text-sm">Your Printed Orders & Delivery Status</h4>
+                      <div className="mt-3 space-y-3">
+                        {orders.map((o) => (
+                          <div key={o.id} className="rounded-xl bg-[#f5f7f2] p-3 text-xs">
+                            <div className="flex justify-between font-bold">
+                              <span>{o.item}</span>
+                              <Tag gold>{o.status}</Tag>
+                            </div>
+                            <div className="mt-2 flex items-center gap-3">
+                              <Truck size={16} className="text-[#4b6154]" />
+                              <div className="flex-1">
+                                <div className="h-1.5 rounded-full bg-[#e2e8de]">
+                                  <div
+                                    className={`h-full rounded-full bg-[#294b41] ${
+                                      o.status === 'Placed'
+                                        ? 'w-1/4'
+                                        : o.status === 'Packed'
+                                        ? 'w-2/4'
+                                        : o.status === 'Shipped'
+                                        ? 'w-3/4'
+                                        : 'w-full'
+                                    }`}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <p className="mt-2 text-[10px] text-[#7a877e]">Tracking ID: {o.trackingId} · Address: {o.address}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Images tab */
+                <div className="p-5">
+                  <p className="text-xs text-[#6e7d72] mb-3">Tap any educational chart or diagram to view in Lightbox Zoom:</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      { title: 'Linear Equations Formula Sheet', img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&auto=format&fit=crop&q=80' },
+                      { title: 'Graphing Pairs of Straight Lines', img: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&auto=format&fit=crop&q=80' },
+                    ].map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveLightboxImage(item.img)}
+                        className="group overflow-hidden rounded-xl border border-[#e2e7dd] text-left hover:border-[#294b41]"
+                      >
+                        <img src={item.img} alt={item.title} className="h-32 w-full object-cover transition-transform group-hover:scale-105" />
+                        <div className="p-2.5 bg-white">
+                          <span className="block text-xs font-bold">{item.title}</span>
+                          <span className="text-[10px] text-[#75847a]">Tap to enlarge</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Card>
+
+            <div className="space-y-4">
+              <Card>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="eyebrow">Topics for you</p>
+                    <h3 className="mt-1 text-lg font-extrabold">Chapter Topics</h3>
+                  </div>
+                  <Tag>4 topics</Tag>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {[
+                    'Pair of linear equations',
+                    'Substitution method',
+                    'Elimination method',
+                    'Graphical representation',
+                  ].map((t, i) => (
+                    <button
+                      key={t}
+                      onClick={() => setTopic(t)}
+                      className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors ${
+                        topic === t ? 'bg-[#edf2eb] font-bold' : 'hover:bg-[#f5f6f1]'
+                      }`}
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#f3e6c9] text-xs font-extrabold">
+                        0{i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-xs">{t}</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="bg-[#f4ead2]">
+                <p className="eyebrow">Free Starter Pack</p>
+                <h3 className="mt-1 text-lg font-extrabold">Unlocked with Consent</h3>
+                <p className="mt-1 text-xs leading-5 text-[#748177]">3 counselling videos · 2 masterclasses · 3 sample PDFs</p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e2d6bc]">
+                  <div className="h-full w-1/3 rounded-full bg-[#294b41]" />
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Lightbox Modal */}
+        {activeLightboxImage && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4 backdrop-blur-sm">
+            <div className="relative max-w-3xl rounded-2xl bg-white p-4">
+              <button
+                onClick={() => setActiveLightboxImage(null)}
+                className="absolute top-3 right-3 rounded-full bg-[#f0f2ed] p-2 hover:bg-[#e2e7dd]"
+              >
+                <X size={18} />
+              </button>
+              <h3 className="mb-3 text-base font-bold">Infographic Chart Viewer</h3>
+              <img src={activeLightboxImage} alt="Zoomed chart" className="max-h-[70vh] w-full rounded-xl object-contain" />
+              <div className="mt-3 flex justify-between text-xs text-[#738278]">
+                <span>Pinch or click to zoom diagram</span>
+                <Button kind="quiet" onClick={() => setActiveLightboxImage(null)}>
+                  Close Lightbox
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {paywallOpen && <PaywallSheet close={() => setPaywallOpen(false)} notify={notify} />}
+      </>
+    );
+  }
+
+  if (page === 'Scholarship') {
+    return <ScholarshipScreen notify={notify} />;
+  }
+
+  if (page === 'Wellness') {
+    return (
+      <>
+        <PageHeading
+          eyebrow="A gentle check-in"
+          title="How are you feeling today?"
+          subtitle="A safe space to check in with your emotions. Saved privately on this device in demo."
+        />
+        <div className="grid gap-4 lg:grid-cols-[1fr_.8fr]">
+          <Card>
+            <p className="eyebrow">Mood check-in</p>
+            <h2 className="mt-1 text-xl font-extrabold">Select how you feel right now.</h2>
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {['Calm', 'Okay', 'Tired', 'Worried', 'Stressed'].map((m) => (
+                <button
+                  key={m}
+                  onClick={() => {
+                    set({ mood: m });
+                    notify(`Mood saved: ${m}. Take a moment for yourself.`);
+                  }}
+                  data-testid={`mood-${m.toLowerCase()}`}
+                  className={`rounded-2xl border p-4 text-center transition-all ${
+                    mood === m ? 'border-[#294b41] bg-[#e6eee3] shadow-sm' : 'border-[#e4e8df] bg-[#fffefa] hover:bg-[#f7f9f6]'
+                  }`}
+                >
+                  <span className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-full bg-[#f4e7c9]">
+                    {m === 'Calm' ? <Activity size={18} /> : m === 'Okay' ? <Check size={18} /> : <HeartHandshake size={18} />}
+                  </span>
+                  <span className="text-xs font-bold">{m}</span>
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center gap-2">
+              <HeartHandshake size={20} className="text-[#294b41]" />
+              <h3 className="text-lg font-extrabold">Speak with a Counsellor</h3>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-[#718177]">
+              Certified counsellors are available via live text chat, voice call, or video call.
+            </p>
+            <Button className="mt-4" onClick={() => (locked ? setPaywallOpen(true) : set({ activePage: 'Live' }))}>
+              {locked ? 'Unlock Live Support (Premium / EWS)' : 'Go to Live Hub'}
+            </Button>
+          </Card>
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2"><div className="flex gap-2"><Button kind="quiet" onClick={() => notify('Lesson resumed from 04:32')}><Play size={14}/> Resume</Button><button className="btn-quiet !px-3" onClick={() => setSpeed(speed === '1×' ? '1.5×' : speed === '1.5×' ? '2×' : '1×')}>Speed {speed}</button></div><span className="text-xs text-[#809087]">04:32 / 12:10</span></div>
-      </div> : contentTab === 'PDF' ? <div className="p-4"><div className="flex items-center justify-between rounded-t-xl bg-[#e8eee6] p-3 text-xs"><span>Lesson notes · Page {pageNo} of 6</span><div className="flex gap-1"><button className="rounded p-1.5 hover:bg-white" onClick={() => setZoom(Math.max(75, zoom - 10))} aria-label="Zoom out">−</button><span className="px-1 pt-1">{zoom}%</span><button className="rounded p-1.5 hover:bg-white" onClick={() => setZoom(Math.min(150, zoom + 10))} aria-label="Zoom in">+</button></div></div><div className="min-h-[210px] border-x border-[#e5e8df] bg-[#fffefa] px-8 py-7 text-center" style={{ fontSize: `${zoom}%` }}><div className="eyebrow">Mathematics · Class {student.className}</div><h3 className="mt-4 text-xl font-extrabold">Solving two equations</h3><p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#62756a]">When two unknown values appear together, we can use one equation to help solve the other. Try arranging each equation so one variable is easy to compare.</p><div className="mx-auto mt-4 w-fit rounded-lg bg-[#eff3eb] px-6 py-3 font-mono text-sm">2x + y = 11</div><span className="mt-6 inline-block text-[10px] font-bold text-[#9a8060]">STUDENT COPY · AARAV S.</span></div><div className="flex items-center justify-between rounded-b-xl bg-[#e8eee6] p-3"><button className="btn-quiet !py-2" onClick={() => setPageNo(Math.max(1, pageNo - 1))}>Previous</button><span className="text-xs text-[#687c70]">{pageNo} / 6</span><button className="btn-quiet !py-2" onClick={() => setPageNo(Math.min(6, pageNo + 1))}>Next</button></div><p className="mt-2 text-center text-[10px] text-[#86948a]">Read-only preview · Download is not available</p></div> : contentTab === 'Print' ? <div className="p-5"><div className="flex gap-4"><div className="grid h-28 w-24 shrink-0 place-items-center rounded-xl bg-[#f4e7c9]"><Printer size={30}/></div><div><Tag gold>Printed learning pack</Tag><h3 className="mt-2 font-bold">Maths practice set</h3><p className="mt-1 text-xs leading-5 text-[#718177]">A printed set delivered to your family. Demo checkout only.</p><p className="mt-2 font-extrabold">Rs 149</p></div></div><label className="mt-4 block"><Label>Delivery address</Label><input className="field" value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)}/></label><div className="mt-3 flex flex-wrap gap-2"><Button onClick={() => { set({ cart: 1 }); notify('Added to your demo cart'); }}><ShoppingBag size={15}/> Add to cart</Button><Button kind="secondary" onClick={() => notify(`Demo order placed · ${deliveryAddress} · tracking: packed`)}>Fake checkout</Button></div><p className="mt-3 text-[11px] text-[#839087]">Cart: {useDemoStore.getState().cart} item · Demo status: Packed · Tracking: label created</p></div> : <div className="p-5"><div className="grid h-48 place-items-center rounded-2xl bg-[#e5ecdf]"><div className="text-center"><div className="mx-auto grid h-20 w-20 place-items-center rounded-[22px] bg-[#f2dfb7] text-3xl font-extrabold text-[#315044]">x + y</div><p className="mt-3 text-xs text-[#657a6d]">Topic image 1 of 3 · tap to zoom</p></div></div><div className="mt-3 flex justify-between"><Button kind="quiet" onClick={() => notify('Image zoomed in')}>Zoom image</Button><span className="pt-2 text-xs text-[#758379]">3 visual examples</span></div></div>}
-    </Card>
-    <div className="space-y-4">
-      <Card><div className="flex items-start justify-between"><div><p className="eyebrow">Your study trail</p><h3 className="mt-1 text-lg font-extrabold">Topics for you</h3></div><Tag>4 topics</Tag></div><div className="mt-3 space-y-2">{['Pair of linear equations', 'Quadratic equations', 'Real numbers', 'Our environment'].map((t, i) => <button key={t} onClick={() => setTopic(t)} className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${topic === t ? 'bg-[#edf2eb]' : 'hover:bg-[#f5f6f1]'}`}><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#f3e6c9] text-xs font-extrabold">0{i + 1}</span><span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold">{t}</span><span className="text-[10px] text-[#7c8b80]">{i < 2 ? 'CBSE · Maths · Class 10' : 'Study note · 9 min'}</span></span>{i > 1 && locked ? <LockKeyhole size={14}/> : <ArrowRight size={14}/>}</button>)}</div><button className="mt-3 text-xs font-bold text-[#294b41] underline underline-offset-2" onClick={() => notify('You are viewing the available sample taxonomy.')}>Browse chapter topics</button></Card>
-      {!(selected === 'CBSE' && (subject === 'Maths' || subject === 'Science') && student.className === '10') && !(selected === 'Bihar' && subject === 'Maths' && student.className === '10') && !(selected === 'ICSE' && subject === 'Physics' && student.className === '11') ? <Card className="bg-[#f8f1e2]"><div className="flex gap-3"><BookOpen size={19}/><div><h3 className="font-bold">Content coming soon</h3><p className="mt-1 text-xs leading-5 text-[#758379]">We are adding thoughtful lessons for this board and class.</p></div></div></Card> : <Card className="bg-[#f4ead2]"><p className="eyebrow">Free starter pack</p><h3 className="mt-1 text-lg font-extrabold">A little head start.</h3><p className="mt-1 text-xs leading-5 text-[#748177]">3 counselling videos · 2 board masterclasses · 3 sample PDFs</p><div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e2d6bc]"><div className="h-full w-1/3 rounded-full bg-[#294b41]"/></div><p className="mt-2 text-[10px] font-bold text-[#758379]">2 of 8 starter items explored</p></Card>}
-    </div>
-  </div>{paywallOpen && <PaywallSheet close={() => setPaywallOpen(false)} notify={notify}/>}</>;
-  if (page === 'Wellness') return <><PageHeading eyebrow="A gentle check-in" title="How are you feeling?" subtitle="There is no right answer. Your check-in stays on this device in this demo."/><div className="grid gap-4 lg:grid-cols-[1fr_.8fr]"><Card><p className="eyebrow">Mood check-in</p><h2 className="mt-1 text-xl font-extrabold">Pick the closest feeling today.</h2><div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">{['Calm', 'Okay', 'Tired', 'Worried'].map(m => <button key={m} onClick={() => { set({ mood: m }); notify('Your mood check-in was saved on this device.'); }} data-testid={`mood-${m.toLowerCase()}`} className={`rounded-2xl border p-4 text-center ${mood === m ? 'border-[#294b41] bg-[#e6eee3]' : 'border-[#e4e8df] bg-[#fffefa]'}`}><span className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-full bg-[#f4e7c9]">{m === 'Calm' ? <Activity size={18}/> : m === 'Okay' ? <Check size={18}/> : m === 'Tired' ? <Clock3 size={18}/> : <HeartHandshake size={18}/>}</span><span className="text-xs font-bold">{m}</span></button>)}</div><div className="mt-5 soft-surface p-4"><p className="font-bold">One small thing to try</p><p className="mt-1 text-sm leading-6 text-[#6f8075]">Take a slow breath in, and let it out gently. You can pause before choosing your next step.</p></div></Card><Card><div className="flex items-center gap-2"><HeartHandshake size={19}/><h3 className="text-lg font-extrabold">Talk with someone</h3></div><p className="mt-2 text-sm leading-6 text-[#718177]">A trained counsellor can listen without judgement. Sessions are available with Premium or Free Access.</p><Button onClick={() => locked ? setPaywallOpen(true) : set({ activePage: 'Live' })}>Explore counsellors</Button><p className="mt-4 text-[11px] leading-5 text-[#8a9389]">If you feel unsafe, reach Tele-MANAS 14416 or emergency services at 112.</p></Card></div><div className="mt-4"><h2 className="mb-3 text-xl font-extrabold">Wellbeing videos</h2><VideoShelf count={6} free={3} notify={notify} onPaywall={() => setPaywallOpen(true)}/></div>{paywallOpen && <PaywallSheet close={() => setPaywallOpen(false)} notify={notify}/>}</>;
-  if (page === 'Live') return <><PageHeading eyebrow="Live support" title="A person who listens." subtitle="Meet fictional professionals and see how a supportive conversation might work."/><div className="mb-4 rounded-2xl border border-[#ead9b3] bg-[#f8f0df] p-4 text-sm text-[#685d45]"><ShieldCheck size={17} className="mr-2 inline"/>You choose what to share. This demo is not a real counselling service.</div><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{[
-    ['Dr. Rhea Menon', 'Child & adolescent counsellor', 'English, Hindi, Malayalam', '4.9', 'Available now'],
-    ['Sana Qureshi', 'School wellbeing specialist', 'Hindi, Urdu, English', '4.8', 'Available in 12 min'],
-    ['Arvind Rao', 'Adolescent psychologist', 'English, Hindi, Kannada', '4.9', 'Available now'],
-    ['Nidhi Soren', 'Youth counsellor', 'Hindi, Santali, English', '4.7', 'Available in 20 min'],
-    ['Kavita Das', 'Family counsellor', 'Hindi, Bengali, English', '4.9', 'Available tomorrow'],
-  ].map(([name, credential, langs, rating, availability], i) => <Card key={name} className="!p-4"><div className="flex items-center gap-3"><div className={`grid h-12 w-12 place-items-center rounded-[16px] font-[Manrope] text-lg font-extrabold ${['bg-[#e6eddf]','bg-[#f3e5c9]','bg-[#e5ecee]','bg-[#eee4dc]','bg-[#e8e7d7]'][i]}`}>{name.split(' ').map(s => s[0]).join('')}</div><div className="min-w-0 flex-1"><h3 className="font-extrabold">{name}</h3><p className="text-[11px] text-[#738177]">{credential}</p></div><span className="flex items-center gap-1 text-xs font-bold"><Star size={13} className="fill-[#c99545] text-[#c99545]"/>{rating}</span></div><p className="mt-3 text-xs text-[#687b70]">{langs}</p><div className="mt-3 flex items-center justify-between"><Tag gold>{availability}</Tag><Button onClick={() => locked ? setPaywallOpen(true) : setChatOpen(true)}>{locked ? <LockKeyhole size={14}/> : <MessageCircle size={14}/>} {locked ? 'Locked' : 'Start chat'}</Button></div></Card>)}</div>{chatOpen && <SessionModal close={() => setChatOpen(false)} notify={notify} />}{paywallOpen && <PaywallSheet close={() => setPaywallOpen(false)} notify={notify}/>}</>;
-  if (page === 'Profile') return <><PageHeading eyebrow="Your account" title="Your learning profile." subtitle="You can review the details and choices saved for this demo."/><div className="grid gap-4 md:grid-cols-2"><Card><p className="eyebrow">Academics</p><h3 className="mt-2 text-xl font-extrabold">{student.name}</h3><div className="mt-3 grid grid-cols-2 gap-3"><div className="soft-surface p-3"><span className="eyebrow">Class</span><p className="mt-1 font-bold">{student.className}</p></div><div className="soft-surface p-3"><span className="eyebrow">Board</span><p className="mt-1 font-bold">{student.board}</p></div><div className="soft-surface p-3"><span className="eyebrow">Medium</span><p className="mt-1 font-bold">{student.medium}</p></div><div className="soft-surface p-3"><span className="eyebrow">Guardian</span><p className="mt-1 font-bold">{student.guardian}</p></div></div></Card><Card><p className="eyebrow">Your access</p><div className="mt-2 flex items-center justify-between"><h3 className="text-xl font-extrabold">{entitlement}</h3><Tag>{useDemoStore.getState().consent ? 'Consent confirmed' : 'Consent pending'}</Tag></div><p className="mt-2 text-sm text-[#758379]">Language: English · Starter pack {useDemoStore.getState().consent ? 'unlocked' : 'locked until consent'}.</p><div className="mt-5 border-t border-[#e8ebe4] pt-4"><h4 className="font-bold">Your data choices</h4><p className="mt-1 text-xs leading-5 text-[#758379]">Demo details stay in local browser storage only.</p><Button kind="quiet" onClick={() => { set({ student: { ...student, name: 'Demo profile cleared' }, mood: '', savedTopics: [] }); notify('Data deletion request recorded in this demo.'); }}>Request data deletion</Button></div><div className="mt-4 border-t border-[#e8ebe4] pt-4"><Button kind="secondary" onClick={() => notify('Ask your parent or guardian to manage access.')}>Ask parent to pay</Button></div></Card></div></>;
-  return <StudentHome notify={notify}/>;
+
+        <div className="mt-6">
+          <h2 className="mb-3 text-xl font-extrabold">Counselling & Mental Health Videos</h2>
+          <VideoShelf count={6} free={3} notify={notify} onPaywall={() => setPaywallOpen(true)} />
+        </div>
+
+        {paywallOpen && <PaywallSheet close={() => setPaywallOpen(false)} notify={notify} />}
+      </>
+    );
+  }
+
+  if (page === 'Live') {
+    return (
+      <>
+        <PageHeading
+          eyebrow="Live Hub"
+          title="Talk with verified professionals."
+          subtitle="Safe in-app text chat, voice call, and video call options. Contact stays inside the platform."
+        />
+
+        <div className="mb-4 rounded-2xl border border-[#ead9b3] bg-[#f8f0df] p-4 text-sm text-[#685d45] flex items-start gap-3">
+          <ShieldCheck size={20} className="shrink-0 text-[#b28743]" />
+          <div>
+            <strong>Safeguarding Notice:</strong> Sessions take place strictly inside EduCare. Phone numbers or external links are never exchanged.
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[
+            ['Dr. Rhea Menon', 'Child & Adolescent Counsellor', 'English, Hindi, Malayalam', '4.9', 'Available Now'],
+            ['Sana Qureshi', 'School Wellbeing Specialist', 'Hindi, Urdu, English', '4.8', 'Available in 12m'],
+            ['Arvind Rao', 'Adolescent Psychologist', 'English, Hindi, Kannada', '4.9', 'Available Now'],
+            ['Nidhi Soren', 'Youth Counsellor', 'Hindi, Santali, English', '4.7', 'Available in 20m'],
+            ['Kavita Das', 'Family Counsellor', 'Hindi, Bengali, English', '4.9', 'Available Tomorrow'],
+          ].map(([name, credential, langs, rating, availability], i) => (
+            <Card key={name} className="!p-4 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`grid h-12 w-12 place-items-center rounded-[16px] font-[Manrope] text-lg font-extrabold ${
+                      ['bg-[#e6eddf]', 'bg-[#f3e5c9]', 'bg-[#e5ecee]', 'bg-[#eee4dc]', 'bg-[#e8e7d7]'][i]
+                    }`}
+                  >
+                    {name
+                      .split(' ')
+                      .map((s) => s[0])
+                      .join('')}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-extrabold">{name}</h3>
+                    <p className="text-[11px] text-[#738177]">{credential}</p>
+                  </div>
+                  <span className="flex items-center gap-1 text-xs font-bold">
+                    <Star size={13} className="fill-[#c99545] text-[#c99545]" />
+                    {rating}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs text-[#687b70]">{langs}</p>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between border-t border-[#e9ece4] pt-3">
+                <Tag gold>{availability}</Tag>
+                <Button onClick={() => (locked ? setPaywallOpen(true) : setChatOpen(true))}>
+                  {locked ? <LockKeyhole size={14} /> : <MessageCircle size={14} />}
+                  {locked ? 'Locked' : 'Start Session'}
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {chatOpen && <SessionModal close={() => setChatOpen(false)} notify={notify} />}
+        {paywallOpen && <PaywallSheet close={() => setPaywallOpen(false)} notify={notify} />}
+      </>
+    );
+  }
+
+  if (page === 'Profile') {
+    return (
+      <>
+        <PageHeading
+          eyebrow="Your Profile"
+          title="Student details & preferences."
+          subtitle="Manage class/board taxonomy, entitlement status, and privacy options."
+        />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <p className="eyebrow">Academic Settings</p>
+            <h3 className="mt-2 text-xl font-extrabold">{student.name}</h3>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="soft-surface p-3">
+                <span className="eyebrow">Class</span>
+                <p className="mt-1 font-bold">{student.className}</p>
+              </div>
+              <div className="soft-surface p-3">
+                <span className="eyebrow">Board</span>
+                <p className="mt-1 font-bold">{student.board}</p>
+              </div>
+              <div className="soft-surface p-3">
+                <span className="eyebrow">Medium</span>
+                <p className="mt-1 font-bold">{student.medium}</p>
+              </div>
+              <div className="soft-surface p-3">
+                <span className="eyebrow">Guardian Phone</span>
+                <p className="mt-1 font-bold">{student.guardian}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <p className="eyebrow">Access & Entitlement</p>
+            <div className="mt-2 flex items-center justify-between">
+              <h3 className="text-2xl font-extrabold">{entitlement}</h3>
+              <Tag green={consent}>{consent ? 'Consent Verified' : 'Consent Pending'}</Tag>
+            </div>
+            <p className="mt-2 text-sm text-[#758379]">Language: English · Free starter pack unlocked.</p>
+            <div className="mt-5 border-t border-[#e8ebe4] pt-4">
+              <h4 className="font-bold text-sm">Data & Privacy Options</h4>
+              <p className="mt-1 text-xs text-[#758379]">Under DPDP Act compliance guidance, you can request full data deletion.</p>
+              <Button
+                kind="quiet"
+                className="mt-3"
+                onClick={() => {
+                  set({ mood: '', savedTopics: [] });
+                  notify('Data deletion request logged in demo browser store.');
+                }}
+              >
+                Request Account Data Deletion
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </>
+    );
+  }
+
+  return <StudentHome notify={notify} />;
 }
+
 function StudentHome({ notify }: { notify: (s: string) => void }) {
-  const set = useDemoStore(s => s.set);
-  const student = useDemoStore(s => s.student);
-  const consent = useDemoStore(s => s.consent);
+  const set = useDemoStore((s) => s.set);
+  const student = useDemoStore((s) => s.student);
+  const consent = useDemoStore((s) => s.consent);
   const [paywall, setPaywall] = useState(false);
-  return <><div className="relative overflow-hidden rounded-[26px] bg-[#294b41] px-5 py-7 text-[#f8f2e3] md:px-8 md:py-9"><div className="absolute -right-8 -top-14 h-56 w-56 rounded-full border-[26px] border-[#f0d9a8]/10"/><div className="absolute bottom-0 right-[17%] h-20 w-20 rounded-full bg-[#d4b978]/15 blur-sm"/><div className="relative max-w-[590px]"><div className="eyebrow !text-[#c9d8c9]">Good afternoon, {student.name.split(' ')[0]}</div><h1 className="mt-2 max-w-md text-[32px] font-extrabold leading-[1.12] md:text-[43px]">Small steps count.<br/><span className="text-[#edcf91]">Keep going.</span></h1><p className="mt-3 max-w-sm text-sm leading-6 text-[#d3ddd1]">A calm place to learn, check in, and find support whenever you need it.</p><Button kind="secondary" onClick={() => set({ activePage: 'Learn' })}><BookOpen size={16}/> Continue learning</Button></div><div className="relative mt-7 grid grid-cols-3 gap-2 md:absolute md:bottom-7 md:right-7 md:w-[290px]"><div className="rounded-2xl bg-white/10 p-3"><div className="text-xl font-extrabold">2/8</div><div className="mt-1 text-[10px] text-[#d4ddd2]">starter pack</div></div><div className="rounded-2xl bg-white/10 p-3"><div className="text-xl font-extrabold">12m</div><div className="mt-1 text-[10px] text-[#d4ddd2]">today's lesson</div></div><div className="rounded-2xl bg-white/10 p-3"><div className="text-xl font-extrabold">1</div><div className="mt-1 text-[10px] text-[#d4ddd2]">check-in saved</div></div></div></div>
-    <div className="mt-5 grid gap-4 lg:grid-cols-[1.35fr_.8fr]"><Card><div className="flex items-start justify-between"><div><p className="eyebrow">Starter pack · {consent ? 'now unlocked' : 'waiting for guardian consent'}</p><h2 className="mt-1 text-xl font-extrabold">{consent ? 'A good place to begin.' : 'Your parent is part of this step.'}</h2><p className="mt-1 text-xs text-[#748177]">{consent ? 'Explore at your own pace. No pressure to finish it all today.' : 'The free starter pack opens after a parent or guardian confirms.'}</p></div><div className="grid h-10 w-10 place-items-center rounded-xl bg-[#f2e4c5]"><Sparkles size={20}/></div></div><div className={`mt-4 grid gap-2 sm:grid-cols-3 ${consent ? '' : 'opacity-45'}`}>{[['03','Counselling videos'],['02','Board masterclasses'],['03','Sample PDFs']].map(([n,t]) => <button key={t} disabled={!consent} onClick={() => set({ activePage: t === 'Counselling videos' ? 'Wellness' : 'Learn' })} className="soft-surface p-3 text-left disabled:cursor-not-allowed"><span className="block font-[Manrope] text-2xl font-extrabold">{n}</span><span className="text-[10px] font-semibold text-[#697d70]">{t}</span></button>)}</div><div className="mt-4 h-2 rounded-full bg-[#e4e9df]"><div className="h-full w-1/4 rounded-full bg-[#cfaa61]"/></div><p className="mt-2 text-[10px] text-[#7e8b81]">2 of 8 items explored</p></Card><Card className="bg-[#f5ead2]"><p className="eyebrow">For your next step</p><h2 className="mt-2 text-xl font-extrabold">Scholarship support</h2><p className="mt-1 text-sm leading-5 text-[#738075]">Explore a fictional EWS application for added learning access.</p><Button onClick={() => notify('Scholarship application SCH-041 is under review.')}>View application</Button></Card></div>
-    <div className="mt-5 grid gap-4 md:grid-cols-2"><Card><div className="flex items-center justify-between"><div><p className="eyebrow">Continue where you left off</p><h2 className="mt-1 text-lg font-extrabold">Pair of linear equations</h2></div><Tag>Maths · 10</Tag></div><div className="mt-3 h-2 rounded-full bg-[#e8ece5]"><div className="h-full w-[38%] rounded-full bg-[#78947e]"/></div><div className="mt-3 flex items-center justify-between"><span className="text-xs text-[#7b8b80]">04:32 of 12:10</span><Button onClick={() => set({ activePage: 'Learn' })}><Play size={14}/> Resume</Button></div></Card><Card className="flex items-center justify-between gap-3"><div><p className="eyebrow">Wellbeing</p><h2 className="mt-1 text-lg font-extrabold">Check in with yourself.</h2><p className="mt-1 text-xs text-[#758379]">Your feelings deserve room.</p></div><Button kind="secondary" onClick={() => set({ activePage: 'Wellness' })}>Check in</Button></Card></div>
-    <div className="mt-4 flex flex-wrap gap-2"><Button onClick={() => setPaywall(true)}>Explore learning plans</Button><Button kind="quiet" onClick={() => notify('A parent-pay link is ready to share in this demo.')}>Ask parent to pay</Button><Button kind="quiet" onClick={() => notify('Restore access checked. No purchase is linked in this demo.')}>Restore access</Button></div>
-    {paywall && <PaywallSheet close={() => setPaywall(false)} notify={notify}/>}
-  </>;
+
+  return (
+    <>
+      <div className="relative overflow-hidden rounded-[26px] bg-[#294b41] px-5 py-7 text-[#f8f2e3] md:px-8 md:py-9">
+        <div className="relative max-w-[590px]">
+          <div className="eyebrow !text-[#c9d8c9]">Welcome back, {student.name.split(' ')[0]}</div>
+          <h1 className="mt-2 text-[30px] font-extrabold leading-tight md:text-[40px]">
+            Small steps lead to great progress. <br />
+            <span className="text-[#edcf91]">Keep going.</span>
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-[#d3ddd1]">
+            Your safe space for verified academic learning and emotional wellbeing support.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button kind="secondary" onClick={() => set({ activePage: 'Learn' })}>
+              <BookOpen size={16} /> Continue Learning
+            </Button>
+            <Button kind="quiet" className="!text-[#faf4e7]" onClick={() => set({ activePage: 'Scholarship' })}>
+              <GraduationCap size={16} /> EWS Scholarship Application
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[1.35fr_.8fr]">
+        <Card>
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="eyebrow">Starter Pack · {consent ? 'Unlocked' : 'Consent Pending'}</p>
+              <h2 className="mt-1 text-xl font-extrabold">Your Starter Pack Progress</h2>
+              <p className="mt-1 text-xs text-[#748177]">Explore counselling videos, masterclasses, and sample notes.</p>
+            </div>
+            <Sparkles size={24} className="text-[#cfaa61]" />
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            {[
+              ['03', 'Counselling Videos'],
+              ['02', 'Board Masterclasses'],
+              ['03', 'Sample PDFs'],
+            ].map(([n, t]) => (
+              <button
+                key={t}
+                onClick={() => set({ activePage: t === 'Counselling Videos' ? 'Wellness' : 'Learn' })}
+                className="soft-surface p-3 text-left hover:bg-[#eaf0e7]"
+              >
+                <span className="block font-[Manrope] text-2xl font-extrabold">{n}</span>
+                <span className="text-[10px] font-semibold text-[#697d70]">{t}</span>
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="bg-[#f5ead2]">
+          <p className="eyebrow">Financial Access</p>
+          <h2 className="mt-2 text-xl font-extrabold">EWS Scholarship</h2>
+          <p className="mt-1 text-sm leading-5 text-[#738075]">Economically weaker students receive 100% free premium access.</p>
+          <Button className="mt-3" onClick={() => set({ activePage: 'Scholarship' })}>
+            View / Apply Scholarship
+          </Button>
+        </Card>
+      </div>
+
+      {paywall && <PaywallSheet close={() => setPaywall(false)} notify={notify} />}
+    </>
+  );
 }
+
+/* EWS SCHOLARSHIP SCREEN */
+function ScholarshipScreen({ notify }: { notify: (s: string) => void }) {
+  const scholarships = useDemoStore((s) => s.scholarships);
+  const student = useDemoStore((s) => s.student);
+  const set = useDemoStore((s) => s.set);
+
+  const [income, setIncome] = useState('< ₹1.5 Lakh / yr');
+  const [occupation, setOccupation] = useState('Agriculture / Daily Wage');
+  const [state, setState] = useState('Jharkhand');
+  const [fileName, setFileName] = useState('');
+  const [declaration, setDeclaration] = useState(false);
+
+  const submitApp = () => {
+    if (!declaration) return;
+    const newApp: ScholarshipApplication = {
+      id: `SCH-0${Math.floor(Math.random() * 90 + 10)}`,
+      student: student.name,
+      income,
+      occupation,
+      state,
+      documentName: fileName || 'Uploaded_EWS_Document.pdf',
+      status: 'Submitted',
+      reason: 'EWS scholarship request submitted',
+      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    };
+    set({ scholarships: [newApp, ...scholarships] });
+    notify('Scholarship application submitted! Status: Submitted for Admin Review.');
+  };
+
+  return (
+    <>
+      <PageHeading
+        eyebrow="EWS Scholarship Program"
+        title="Equal opportunity learning."
+        subtitle="Verifiable economically weaker section (EWS) students get automatic Free Access to all premium learning content."
+      />
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card>
+          <h2 className="text-xl font-extrabold">New EWS Application</h2>
+          <p className="mt-1 text-xs text-[#718177]">All uploaded document previews remain local to your browser session.</p>
+
+          <div className="mt-4 space-y-3">
+            <div>
+              <Label>Student Name</Label>
+              <input className="field bg-[#f4f7f2]" value={student.name} disabled />
+            </div>
+
+            <div>
+              <Label>Annual Household Income</Label>
+              <select className="field" value={income} onChange={(e) => setIncome(e.target.value)}>
+                <option>&lt; ₹1.0 Lakh / yr</option>
+                <option>&lt; ₹1.5 Lakh / yr</option>
+                <option>&lt; ₹2.5 Lakh / yr</option>
+              </select>
+            </div>
+
+            <div>
+              <Label>Parent / Guardian Occupation</Label>
+              <input className="field" value={occupation} onChange={(e) => setOccupation(e.target.value)} placeholder="e.g. Daily wage laborer, farming" />
+            </div>
+
+            <div>
+              <Label>State of Residence</Label>
+              <select className="field" value={state} onChange={(e) => setState(e.target.value)}>
+                <option>Jharkhand</option>
+                <option>Bihar</option>
+                <option>Odisha</option>
+                <option>Chhattisgarh</option>
+              </select>
+            </div>
+
+            <div>
+              <Label>Upload EWS / Income Proof Document</Label>
+              <div className="flex items-center gap-3 rounded-xl border border-dashed border-[#b8c6ba] bg-[#f9faf7] p-3">
+                <Upload size={20} className="text-[#64796c]" />
+                <input
+                  type="file"
+                  className="text-xs"
+                  onChange={(e) => setFileName(e.target.files?.[0]?.name || 'EWS_Income_Proof.pdf')}
+                />
+              </div>
+              {fileName && <p className="mt-1 text-[11px] font-bold text-[#294b41]">Selected: {fileName}</p>}
+            </div>
+
+            <label className="flex items-start gap-2 pt-2 text-xs leading-5">
+              <input type="checkbox" checked={declaration} onChange={(e) => setDeclaration(e.target.checked)} />
+              I declare that the information provided is accurate and verifiable.
+            </label>
+
+            <Button disabled={!declaration} onClick={submitApp} className="w-full">
+              Submit EWS Application
+            </Button>
+          </div>
+        </Card>
+
+        <Card>
+          <h2 className="text-xl font-extrabold">Your Applications & Status</h2>
+          <div className="mt-4 space-y-3">
+            {scholarships.map((s) => (
+              <div key={s.id} className="rounded-xl border border-[#e2e7dd] bg-[#f9faf7] p-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-sm">{s.id}</span>
+                  <Tag gold={s.status.includes('Submitted')} green={s.status.includes('Approved')}>
+                    {s.status}
+                  </Tag>
+                </div>
+                <p className="mt-2 text-xs font-semibold">{s.student} · {s.state}</p>
+                <p className="mt-1 text-xs text-[#718177]">{s.reason} · Doc: {s.documentName}</p>
+                <p className="mt-2 text-[10px] text-[#86948a]">Submitted: {s.date}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 rounded-xl bg-[#f5ead2] p-4 text-xs leading-5 text-[#685c45]">
+            <Sparkles size={16} className="mr-1 inline text-[#a88243]" />
+            <strong>Demo Shortcut:</strong> Click <strong>Fast-forward EWS</strong> in the left drawer demo controls to instantly simulate Admin approval and unlock Free Access!
+          </div>
+        </Card>
+      </div>
+    </>
+  );
+}
+
 function VideoShelf({ count, free, notify, onPaywall }: { count: number; free: number; notify: (s: string) => void; onPaywall: () => void }) {
-  const entitlement = useDemoStore(s => s.entitlement);
-  const consent = useDemoStore(s => s.consent);
-  return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: count }, (_, i) => {
-    const canWatch = (i < free && consent) || entitlement === 'Premium' || entitlement === 'Free Access';
-    return <Card key={i} className="!p-4"><div className={`grid aspect-[1.8] place-items-center rounded-xl ${['bg-[#dce9df]','bg-[#f0e5cd]','bg-[#e2ebec]'][i % 3]}`}><span className="grid h-11 w-11 place-items-center rounded-full bg-[#294b41] text-white"><Play size={17} fill="currentColor"/></span></div><div className="mt-3 flex justify-between gap-2"><div><h3 className="font-bold">{['Making room for big feelings','A kinder inner voice','Small steps through stress','Sleep and study balance','When friendship feels hard','Asking for help'][i]}</h3><p className="mt-1 text-[10px] text-[#829086]">Wellbeing · {8 + i * 2} min</p></div>{i < free && consent ? <Tag>Free</Tag> : <Tag gold><LockKeyhole size={10} className="mr-1"/>{i < free ? 'Consent required' : 'Premium'}</Tag>}</div><Button kind="quiet" onClick={() => canWatch ? notify('Video opened · your name watermark is visible.') : i < free ? window.dispatchEvent(new Event('educare-onboarding')) : onPaywall()}>{canWatch ? 'Watch video' : i < free ? 'Ask guardian' : 'Unlock video'}</Button></Card>;
-  })}</div>;
+  const entitlement = useDemoStore((s) => s.entitlement);
+  const consent = useDemoStore((s) => s.consent);
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: count }, (_, i) => {
+        const canWatch = (i < free && consent) || entitlement === 'Premium' || entitlement === 'Free Access';
+        const titles = [
+          'Making room for big feelings',
+          'A kinder inner voice',
+          'Small steps through exam stress',
+          'Sleep and study balance',
+          'Navigating hostel friendships',
+          'When & how to ask for help',
+        ];
+        return (
+          <Card key={i} className="!p-4 flex flex-col justify-between">
+            <div>
+              <div className={`grid aspect-[1.8] place-items-center rounded-xl ${['bg-[#dce9df]', 'bg-[#f0e5cd]', 'bg-[#e2ebec]'][i % 3]}`}>
+                <span className="grid h-11 w-11 place-items-center rounded-full bg-[#294b41] text-white">
+                  <Play size={17} fill="currentColor" />
+                </span>
+              </div>
+              <div className="mt-3 flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-bold text-sm">{titles[i]}</h3>
+                  <p className="mt-1 text-[10px] text-[#829086]">Wellbeing · {8 + i * 2} min</p>
+                </div>
+                {i < free && consent ? (
+                  <Tag green>Free</Tag>
+                ) : (
+                  <Tag gold>
+                    <LockKeyhole size={10} className="mr-1 inline" />
+                    {i < free ? 'Consent Required' : 'Premium'}
+                  </Tag>
+                )}
+              </div>
+            </div>
+            <Button
+              kind="quiet"
+              className="mt-3 w-full"
+              onClick={() =>
+                canWatch
+                  ? notify('Video opened · Dynamic watermark active.')
+                  : i < free
+                  ? window.dispatchEvent(new Event('educare-onboarding'))
+                  : onPaywall()
+              }
+            >
+              {canWatch ? 'Watch Video' : i < free ? 'Complete Consent' : 'Unlock Video'}
+            </Button>
+          </Card>
+        );
+      })}
+    </div>
+  );
 }
+
+/* ==================== PARENT WORKSPACE ==================== */
 
 function ParentScreen({ page, notify }: { page: string; notify: (s: string) => void }) {
-  const set = useDemoStore(s => s.set);
-  const visits = useDemoStore(s => s.visits);
-  const reports = useDemoStore(s => s.reports);
-  const scholarships = useDemoStore(s => s.scholarships);
+  const visits = useDemoStore((s) => s.visits);
+  const reports = useDemoStore((s) => s.reports);
+  const scholarships = useDemoStore((s) => s.scholarships);
+  const set = useDemoStore((s) => s.set);
+
   const [wizard, setWizard] = useState(false);
+  const [selectedReportPdf, setSelectedReportPdf] = useState<any | null>(null);
+
+  if (page === 'Visits') {
+    return (
+      <>
+        <PageHeading
+          eyebrow="Physical Verification Visits"
+          title="Field verifications for parental peace of mind."
+          subtitle="Trained field agents physically check on living conditions, food quality, and social wellbeing."
+          action={
+            <Button onClick={() => setWizard(true)}>
+              <Plus size={16} /> Request Physical Visit
+            </Button>
+          }
+        />
+
+        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+          {[
+            ['1', 'Pending Requests'],
+            ['1', 'In Progress'],
+            ['2', 'Completed Reports'],
+          ].map(([n, l]) => (
+            <Card key={l} className="!p-4">
+              <span className="font-[Manrope] text-2xl font-extrabold">{n}</span>
+              <span className="ml-2 text-xs text-[#78867b]">{l}</span>
+            </Card>
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          {visits.map((v) => (
+            <Card key={v.id} className="!p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Tag gold={v.status !== 'Completed'} red={v.status === 'Not Permitted'} green={v.status === 'Completed'}>
+                      {v.status}
+                    </Tag>
+                    <span className="text-[10px] text-[#87938a]">{v.id}</span>
+                  </div>
+                  <h3 className="mt-2 text-lg font-extrabold">
+                    {v.child} · {v.focus}
+                  </h3>
+                  <p className="mt-1 text-xs text-[#758379]">
+                    {v.date} · {v.address}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] uppercase tracking-wider text-[#87938a]">Assigned Agent</p>
+                  <p className="mt-1 text-xs font-bold">{v.agent}</p>
+                </div>
+              </div>
+
+              {/* Status Timeline */}
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#e9ece4] pt-3">
+                <div className="flex items-center gap-2 text-[10px] text-[#78877d]">
+                  <span className="flex items-center gap-1 font-bold">
+                    <CheckCircle2 size={13} className="text-[#294b41]" /> Requested
+                  </span>
+                  <ArrowRight size={12} />
+                  <span className="flex items-center gap-1 font-bold">
+                    <CheckCircle2 size={13} className="text-[#294b41]" /> Premises Permission
+                  </span>
+                  <ArrowRight size={12} />
+                  <span className="flex items-center gap-1 font-bold">
+                    {v.status === 'Completed' ? (
+                      <CheckCircle2 size={13} className="text-[#294b41]" />
+                    ) : (
+                      <Clock3 size={13} className="text-[#c99545]" />
+                    )}{' '}
+                    {v.status === 'Completed' ? 'Report Published' : 'Visit Scheduled'}
+                  </span>
+                </div>
+                <Button kind="quiet" onClick={() => notify(`${v.id}: Visit timeline log & details opened.`)}>
+                  View Detailed Logs
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {wizard && <VisitWizard close={() => setWizard(false)} notify={notify} />}
+      </>
+    );
+  }
+
+  if (page === 'Reports') {
+    return (
+      <>
+        <PageHeading
+          eyebrow="Parent-Only Verification Reports"
+          title="Verified field reports."
+          subtitle="Strictly private to linked parents. Photographs and notes are verified by Field Agents."
+        />
+
+        <div className="mb-4 rounded-xl bg-[#eaf0e7] p-3 text-xs text-[#5a7164] flex items-center gap-2">
+          <ShieldCheck size={16} /> Confidential: Visible only to linked guardian. Access attempts by unlinked users are blocked.
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          {reports.map((r) => (
+            <Card key={r.id}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <Tag green>{r.status}</Tag>
+                  <h2 className="mt-2 text-xl font-extrabold">{r.child}</h2>
+                  <p className="text-xs text-[#7d8a80]">{r.date} · Report #{r.id}</p>
+                </div>
+                <span className="rounded-xl bg-[#f4e8cf] px-3 py-2 text-xs font-bold text-[#5c4923]">{r.rating}</span>
+              </div>
+
+              <p className="mt-4 text-sm leading-6 text-[#4d5e53]">{r.notes}</p>
+
+              {/* 6-point checklist summary */}
+              <div className="mt-4 space-y-1.5 border-t border-[#e9ece4] pt-3">
+                <p className="text-xs font-bold text-[#294b41]">Structured Checklist Breakdown</p>
+                {Object.entries(r.checklist || {}).map(([key, val]) => (
+                  <div key={key} className="flex justify-between text-xs">
+                    <span className="text-[#647569]">{key}</span>
+                    <span className={`font-bold ${val === 'Green' ? 'text-[#294b41]' : 'text-[#b87c3b]'}`}>
+                      {val === 'Green' ? '✓ Satisfactory' : '⚠ Action Suggested'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Sample Photo Gallery */}
+              <div className="mt-4">
+                <p className="text-xs font-bold text-[#294b41] mb-2">Verified Photos</p>
+                <div className="flex gap-2">
+                  {(r.photos || []).map((p, idx) => (
+                    <img key={idx} src={p} alt="Hostel evidence" className="h-20 w-28 rounded-lg object-cover border" />
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2 border-t border-[#e9ece4] pt-4">
+                <Button onClick={() => setSelectedReportPdf(r)}>
+                  <Download size={14} /> Download Watermarked PDF
+                </Button>
+                <Button kind="quiet" onClick={() => notify('Follow-up dispute request logged.')}>
+                  Request Follow-up
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Report PDF Preview Modal */}
+        {selectedReportPdf && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+              <div className="flex justify-between items-start border-b pb-3">
+                <div>
+                  <h3 className="font-extrabold text-lg">EduCare Official Verification Report</h3>
+                  <p className="text-xs text-[#718177]">Report ID: {selectedReportPdf.id} · Confidential</p>
+                </div>
+                <button onClick={() => setSelectedReportPdf(null)}>
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="my-4 rounded-xl border bg-[#fbfaf6] p-4 text-xs space-y-2">
+                <p>
+                  <strong>Child Name:</strong> {selectedReportPdf.child}
+                </p>
+                <p>
+                  <strong>Agent:</strong> {selectedReportPdf.agent}
+                </p>
+                <p>
+                  <strong>Overall Rating:</strong> {selectedReportPdf.rating}
+                </p>
+                <p>
+                  <strong>Notes:</strong> {selectedReportPdf.notes}
+                </p>
+                <div className="mt-3 border-t pt-2 text-[10px] text-red-600 font-bold tracking-wider">
+                  WATERMARK: OFFICIAL GUARDIAN COPY · PREPARED FOR PARENT
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <Button kind="quiet" onClick={() => setSelectedReportPdf(null)}>
+                  Close
+                </Button>
+                <Button onClick={() => notify('Watermarked PDF downloaded to local device.')}>Print / Save PDF</Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  if (page === 'Child') {
+    return (
+      <>
+        <PageHeading
+          eyebrow="Child Management"
+          title="Linked Children & Entitlements."
+          subtitle="Manage subscriptions, invoices, and scholarship applications."
+        />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <div className="flex items-center gap-3">
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#e8eddf] font-[Manrope] text-lg font-extrabold">AS</div>
+              <div>
+                <h2 className="text-xl font-extrabold">Aarav Sharma</h2>
+                <p className="text-xs text-[#7d897f]">Class 10 · CBSE · English Medium</p>
+              </div>
+            </div>
+            <div className="mt-5 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Free Starter Pack</span>
+                <strong>Active</strong>
+              </div>
+              <p className="text-xs text-[#7b897e]">Consent verified by parent on 12 Jun 2025.</p>
+            </div>
+          </Card>
+
+          <Card className="bg-[#f5ead2]">
+            <p className="eyebrow">Subscription Status</p>
+            <h2 className="mt-2 text-2xl font-extrabold">Starter Access</h2>
+            <p className="mt-1 text-sm text-[#748075]">8 curated items included free with consent.</p>
+            <Button className="mt-4" onClick={() => notify('Parent payment checkout sheet opened in demo.')}>
+              Upgrade to Premium (₹199 / mo)
+            </Button>
+          </Card>
+        </div>
+      </>
+    );
+  }
+
+  if (page === 'Profile') {
+    return (
+      <>
+        <PageHeading eyebrow="Parent Profile" title="Family settings." subtitle="Manage linked children, consent records, and preferences." />
+        <Card className="max-w-xl">
+          <h3 className="font-extrabold text-lg">Linked Children</h3>
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center justify-between rounded-xl bg-[#f2f4ee] p-3 text-xs">
+              <span className="font-bold">Aarav Sharma (Class 10 CBSE)</span>
+              <Tag green>Linked</Tag>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-[#f2f4ee] p-3 text-xs">
+              <span className="font-bold">Isha Sharma (Class 8 ICSE)</span>
+              <Tag green>Linked</Tag>
+            </div>
+          </div>
+        </Card>
+      </>
+    );
+  }
+
+  return <ParentHome notify={notify} setWizard={setWizard} />;
+}
+
+function ParentHome({ notify, setWizard }: { notify: (s: string) => void; setWizard: (b: boolean) => void }) {
+  const set = useDemoStore((s) => s.set);
+  const visits = useDemoStore((s) => s.visits);
+
+  return (
+    <>
+      <div className="relative overflow-hidden rounded-[26px] bg-[#294b41] px-5 py-7 text-[#faf4e7] md:px-8 md:py-9">
+        <div className="max-w-[590px]">
+          <div className="eyebrow !text-[#bed0c2]">Parent Dashboard</div>
+          <h2 className="mt-2 text-3xl font-extrabold">Peace of mind for your child living away.</h2>
+          <p className="mt-2 text-sm leading-6 text-[#d1ddd2]">
+            Request physical hostel checks, review verified reports, and support your child's academic journey.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button kind="secondary" onClick={() => setWizard(true)}>
+              <Plus size={16} /> Request Physical Visit
+            </Button>
+            <Button kind="quiet" className="!text-white" onClick={() => set({ activePage: 'Reports' })}>
+              View Latest Report
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <Card>
+          <p className="eyebrow">Active Visits</p>
+          <h3 className="mt-2 text-3xl font-extrabold">{visits.length}</h3>
+          <p className="text-xs text-[#7c897e]">1 in progress today</p>
+        </Card>
+        <Card>
+          <p className="eyebrow">Verified Reports</p>
+          <h3 className="mt-2 text-3xl font-extrabold">2</h3>
+          <p className="text-xs text-[#7c897e]">Parent-only private view</p>
+        </Card>
+        <Card>
+          <p className="eyebrow">Linked Children</p>
+          <h3 className="mt-2 text-3xl font-extrabold">2</h3>
+          <p className="text-xs text-[#7c897e]">Aarav & Isha</p>
+        </Card>
+      </div>
+    </>
+  );
+}
+
+function VisitWizard({ close, notify }: { close: () => void; notify: (s: string) => void }) {
+  const addVisit = useDemoStore((s) => s.set);
+  const visits = useDemoStore((s) => s.visits);
+
   const [step, setStep] = useState(0);
   const [child, setChild] = useState('Aarav Sharma');
-  const [date, setDate] = useState('2025-06-24');
-  const [focus, setFocus] = useState('Study routine');
-  if (page === 'Visits') return <><PageHeading eyebrow="Family visits" title="Care, at your pace." subtitle="A visit begins with your permission. You and your child decide what feels comfortable." action={<Button onClick={() => { setWizard(true); setStep(0); }}><Plus size={16}/> Request a visit</Button>}/><div className="mb-4 grid gap-3 sm:grid-cols-3">{[['1','Pending request'],['1','In progress'],['2','Completed']].map(([n, l]) => <Card key={l} className="!p-4"><span className="font-[Manrope] text-2xl font-extrabold">{n}</span><span className="ml-2 text-xs text-[#78867b]">{l}</span></Card>)}</div><div className="space-y-3">{visits.map(v => <Card key={v.id} className="!p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex items-center gap-2"><Tag gold>{v.status}</Tag><span className="text-[10px] text-[#87938a]">{v.id}</span></div><h3 className="mt-2 text-lg font-extrabold">{v.child} · {v.focus}</h3><p className="mt-1 text-xs text-[#758379]">{v.date} · {v.address}</p></div><div className="text-right"><p className="text-[10px] uppercase tracking-wider text-[#87938a]">Visit guide</p><p className="mt-1 text-xs font-bold">{v.agent}</p></div></div><div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#e9ece4] pt-3"><div className="flex flex-wrap items-center gap-2 text-[10px] text-[#78877d]"><span className="flex items-center gap-1"><Check size={12}/> Request noted</span><ArrowRight size={12}/><span className="flex items-center gap-1">{v.status === 'Completed' ? <Check size={12}/> : <Clock3 size={12}/>} {v.status === 'Completed' ? 'Report ready' : 'Scheduling'}</span>{v.id === 'VIS-177' && <Tag red>Not Permitted · refund complete</Tag>}</div><Button kind="quiet" onClick={() => notify(`${v.id}: private visit details opened.`)}>View timeline</Button></div></Card>)}</div>{wizard && <VisitWizard step={step} setStep={setStep} close={() => setWizard(false)} child={child} setChild={setChild} date={date} setDate={setDate} focus={focus} setFocus={setFocus} notify={notify}/>}</>;
-  if (page === 'Reports') return <><PageHeading eyebrow="Private family reports" title="A thoughtful recap." subtitle="Only linked parents can view these fictional reports. Photos are sample placeholders."/><div className="mb-4 rounded-xl bg-[#eaf0e7] p-3 text-xs text-[#5a7164]"><ShieldCheck size={15} className="mr-2 inline"/>Visible only to the linked family · not available to students or other roles</div><div className="grid gap-4 lg:grid-cols-2">{reports.map(r => <Card key={r.id}><div className="flex items-start justify-between gap-3"><div><Tag>{r.status}</Tag><h2 className="mt-2 text-xl font-extrabold">{r.child}</h2><p className="text-xs text-[#7d8a80]">{r.date} · {r.id}</p></div><span className="rounded-xl bg-[#f4e8cf] px-3 py-2 text-xs font-bold">{r.rating}</span></div><p className="mt-4 text-sm leading-6 text-[#60756a]">{r.notes}</p><div className="mt-4 grid grid-cols-3 gap-2"><div className="rounded-xl bg-[#e4ebe1] p-3 text-center"><span className="block text-xl font-extrabold">4.6</span><span className="text-[9px] text-[#708176]">family rating</span></div><div className="rounded-xl bg-[#e8ece4] p-3 text-center"><Check className="mx-auto mb-1" size={17}/><span className="text-[9px] text-[#708176]">respectful visit</span></div><div className="rounded-xl bg-[#f2e8d7] p-3 text-center"><span className="block text-sm font-extrabold">2</span><span className="text-[9px] text-[#708176]">sample photos</span></div></div><div className="mt-3 flex flex-wrap gap-2"><Tag>Agent verified</Tag><Tag>GPS demo badge</Tag><Tag gold>{r.date}</Tag></div><div className="mt-4 flex flex-wrap gap-2 border-t border-[#e9ece4] pt-4"><Button onClick={() => notify(`${r.id} watermarked PDF prepared in demo (no file download).`)}><Download size={14}/> Watermarked PDF</Button><Button kind="quiet" onClick={() => notify('Follow-up request sent in this demo.')}>Request follow-up</Button></div></Card>)}</div></>;
-  if (page === 'Child') return <><PageHeading eyebrow="Child learning plan" title="Aarav's progress." subtitle="Manage learning access and view a simple, family-friendly summary."/><div className="grid gap-4 md:grid-cols-2"><Card><div className="flex items-center gap-3"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#e8eddf] font-[Manrope] text-lg font-extrabold">AS</div><div><h2 className="text-xl font-extrabold">Aarav Sharma</h2><p className="text-xs text-[#7d897f]">Class 10 · CBSE · English medium</p></div></div><div className="mt-5 space-y-3"><div className="flex justify-between text-sm"><span>Starter pack</span><strong>2 of 8 items</strong></div><div className="h-2 rounded-full bg-[#e7ebe3]"><div className="h-full w-1/4 rounded-full bg-[#c8a45d]"/></div><p className="text-xs text-[#7b897e]">Consent: confirmed by parent · 12 Jun 2025</p></div><Button kind="quiet" onClick={() => notify('Linked student status opened.')}>View student status</Button></Card><Card className="bg-[#f5ead2]"><p className="eyebrow">Current subscription</p><h2 className="mt-2 text-2xl font-extrabold">Free starter access</h2><p className="mt-1 text-sm text-[#748075]">8 curated starter items included after consent.</p><div className="my-4 border-t border-[#dfd3b9] pt-3"><h3 className="font-bold">Invoices</h3><p className="mt-2 flex justify-between text-xs"><span>Starter pack · 12 Jun</span><span>Rs 0 · Paid</span></p><p className="mt-2 flex justify-between text-xs"><span>Premium plan</span><span>Not purchased</span></p></div><Button onClick={() => notify('Parent payment link copied in this demo.')}>Parent payment action</Button></Card><Card className="md:col-span-2"><p className="eyebrow">Scholarship applications</p><div className="mt-3 space-y-2">{scholarships.map(s => <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#f4f5ef] p-3"><div><strong className="text-sm">{s.student}</strong><span className="ml-2 text-xs text-[#7c897f]">{s.reason}</span></div><Tag gold>{s.status}</Tag></div>)}</div></Card></div></>;
-  if (page === 'Profile') return <><PageHeading eyebrow="Parent profile" title="Your family, your choices." subtitle="Review consent, language, linked children and local demo data."/><div className="grid gap-4 md:grid-cols-2"><Card><p className="eyebrow">Linked children</p>{['Aarav Sharma · Class 10 CBSE','Isha Sharma · Class 8 ICSE'].map(n => <div className="mt-3 flex items-center justify-between rounded-xl bg-[#f2f4ee] p-3" key={n}><span className="text-sm font-bold">{n}</span><Tag>Linked</Tag></div>)}<Button kind="quiet" onClick={() => notify('Child linking form opened in demo.')}>Add a child</Button></Card><Card><p className="eyebrow">Consent & preferences</p><h3 className="mt-2 text-xl font-extrabold">{useDemoStore.getState().consent ? 'Consent confirmed' : 'Consent pending'}</h3><p className="mt-1 text-sm text-[#78857b]">Guardian phone ending 3210 · English</p><div className="mt-4 flex gap-2"><Button kind="quiet" onClick={() => notify('Language preference updated.')}>Change language</Button><Button kind="quiet" onClick={() => notify('Data deletion request recorded.')}>Request data deletion</Button></div><Button kind="secondary" onClick={() => window.dispatchEvent(new Event('educare-onboarding'))}>Review consent</Button></Card></div></>;
-  return <><PageHeading eyebrow="Family dashboard" title="Good afternoon, Priya." subtitle="A steady way to stay close to your child's learning and wellbeing." action={<Button onClick={() => set({ activePage: 'Visits' })}><Plus size={15}/> Request a visit</Button>}/><div className="grid gap-4 xl:grid-cols-[1.2fr_.8fr]"><Card className="bg-[#294b41] text-[#faf4e7]"><p className="eyebrow !text-[#bed0c2]">A little progress, together</p><h2 className="mt-2 max-w-md text-3xl font-extrabold">Support that respects your family's rhythm.</h2><p className="mt-2 max-w-md text-sm leading-6 text-[#d1ddd2]">Your child has a free starter pack ready. Explore learning, request a visit, or check in on the latest report.</p><div className="mt-5 flex gap-2"><Button kind="secondary" onClick={() => notify('Aarav profile opened.')}>View child progress</Button><Button kind="quiet" onClick={() => set({ activePage: 'Reports' })}>Recent report</Button></div></Card><Card><p className="eyebrow">Next visit</p><h3 className="mt-2 text-xl font-extrabold">Aarav · Study routine</h3><p className="mt-1 text-sm text-[#738177]">Today · Meena Kumari is checking in</p><div className="mt-4 flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#bc9b5c]"/><span className="text-xs font-bold">In progress</span><span className="ml-auto text-xs text-[#819086]">Consent respected</span></div><Button kind="quiet" onClick={() => set({ activePage: 'Visits' })}>View visit timeline</Button></Card></div><div className="mt-4 grid gap-4 md:grid-cols-3"><Card><p className="eyebrow">Learning</p><h3 className="mt-2 text-2xl font-extrabold">2 / 8</h3><p className="text-xs text-[#7c897e]">starter pack items explored</p></Card><Card><p className="eyebrow">Family visits</p><h3 className="mt-2 text-2xl font-extrabold">{visits.length}</h3><p className="text-xs text-[#7c897e]">past and upcoming</p></Card><Card><p className="eyebrow">Scholarship</p><h3 className="mt-2 text-lg font-extrabold">Under review</h3><p className="text-xs text-[#7c897e]">{scholarships[0]?.id} · EWS support</p></Card></div><div className="mt-4"><h2 className="mb-3 text-xl font-extrabold">Your children</h2><div className="grid gap-3 sm:grid-cols-2"><ChildMini name="Aarav Sharma" className="10" board="CBSE" onClick={() => set({ activePage: 'Child' })}/><ChildMini name="Isha Sharma" className="8" board="ICSE" onClick={() => set({ activePage: 'Child' })}/></div></div>{wizard && <VisitWizard step={step} setStep={setStep} close={() => setWizard(false)} child={child} setChild={setChild} date={date} setDate={setDate} focus={focus} setFocus={setFocus} notify={notify}/>}</>;
+  const [date, setDate] = useState('2025-06-25');
+  const [focusHostel, setFocusHostel] = useState(true);
+  const [focusFood, setFocusFood] = useState(true);
+  const [focusRoutine, setFocusRoutine] = useState(true);
+  const [address, setAddress] = useState('12 Lake Road, Ranchi Hostel');
+
+  const submit = () => {
+    const newV = {
+      id: `VIS-20${Math.floor(Math.random() * 90 + 10)}`,
+      child,
+      date: `${date} · 11:00 AM`,
+      focus: 'Hostel & food quality',
+      status: 'Under Review',
+      agent: 'Not assigned',
+      address,
+      premisesPermission: 'Pending',
+    };
+    addVisit({ visits: [newV, ...visits] });
+    close();
+    notify('Visit request submitted! ₹999 demo payment recorded.');
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h2 className="font-extrabold text-xl">Request Physical Visit (Step {step + 1} of 3)</h2>
+          <button onClick={close}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {step === 0 && (
+          <div className="mt-4 space-y-3">
+            <div>
+              <Label>Select Child</Label>
+              <select className="field" value={child} onChange={(e) => setChild(e.target.value)}>
+                <option>Aarav Sharma</option>
+                <option>Isha Sharma</option>
+              </select>
+            </div>
+            <div>
+              <Label>Hostel / Coaching Address</Label>
+              <input className="field" value={address} onChange={(e) => setAddress(e.target.value)} />
+            </div>
+            <div>
+              <Label>Preferred Visit Date</Label>
+              <input type="date" className="field" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="mt-4 space-y-3">
+            <Label>Observation Focus Areas</Label>
+            <label className="flex items-center gap-2 text-xs font-bold">
+              <input type="checkbox" checked={focusHostel} onChange={(e) => setFocusHostel(e.target.checked)} /> Hostel living
+              conditions & hygiene
+            </label>
+            <label className="flex items-center gap-2 text-xs font-bold">
+              <input type="checkbox" checked={focusFood} onChange={(e) => setFocusFood(e.target.checked)} /> Food quality & dining area
+            </label>
+            <label className="flex items-center gap-2 text-xs font-bold">
+              <input type="checkbox" checked={focusRoutine} onChange={(e) => setFocusRoutine(e.target.checked)} /> Study routine & social
+              circle
+            </label>
+
+            <div className="mt-3 rounded-xl bg-[#f5ead2] p-3 text-xs leading-5 text-[#685c43]">
+              <ShieldCheck size={16} className="mr-1 inline" />
+              <strong>Student Dignity Rule:</strong> Your child will be notified before every visit. Agents observe general wellbeing only.
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="mt-4 space-y-3">
+            <div className="rounded-xl bg-[#edf2eb] p-4 text-xs space-y-1">
+              <div className="flex justify-between font-bold text-sm">
+                <span>Verification Visit Fee</span>
+                <span>₹999</span>
+              </div>
+              <p>Child: {child}</p>
+              <p>Address: {address}</p>
+            </div>
+            <p className="text-[11px] text-[#718177]">Simulated payment sheet. No real money collected.</p>
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-between">
+          {step > 0 ? (
+            <Button kind="quiet" onClick={() => setStep(step - 1)}>
+              Back
+            </Button>
+          ) : (
+            <Button kind="quiet" onClick={close}>
+              Cancel
+            </Button>
+          )}
+          {step < 2 ? <Button onClick={() => setStep(step + 1)}>Continue</Button> : <Button onClick={submit}>Pay ₹999 & Confirm</Button>}
+        </div>
+      </div>
+    </div>
+  );
 }
-function ChildMini({ name, className, board, onClick }: { name: string; className: string; board: string; onClick: () => void }) { return <button onClick={onClick} className="surface flex items-center gap-3 p-4 text-left"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f1e5c8] font-extrabold">{name.split(' ').map(s => s[0]).join('')}</span><span className="flex-1"><strong className="block">{name}</strong><span className="text-xs text-[#79877d]">Class {className} · {board}</span></span><ArrowRight size={17}/></button>; }
-function VisitWizard({ step, setStep, close, child, setChild, date, setDate, focus, setFocus, notify }: { step: number; setStep: (n: number) => void; close: () => void; child: string; setChild: (s: string) => void; date: string; setDate: (s: string) => void; focus: string; setFocus: (s: string) => void; notify: (s: string) => void }) {
-  const addVisit = useDemoStore(s => s.set);
-  const visits = useDemoStore(s => s.visits);
-  const [address, setAddress] = useState('12 Lake Road, Ranchi');
-  const [special, setSpecial] = useState('');
-  const submit = () => { addVisit({ visits: [{ id: 'VIS-209', child, date: `${date} · 10:30 AM`, focus, status: 'Pending request', agent: 'Not assigned', address }, ...visits] }); close(); notify('Visit request submitted · Rs 999 demo payment recorded.'); };
-  return <div className="fixed inset-0 z-50 grid place-items-end bg-[#14251f]/45 p-0 backdrop-blur-sm sm:place-items-center sm:p-4" role="dialog" aria-modal="true"><div className="w-full max-w-lg rounded-t-[26px] bg-[#faf9f3] p-5 sm:rounded-[26px] sm:p-7"><div className="flex items-start justify-between"><div><p className="eyebrow">Family visit · step {step + 1} of 3</p><h2 className="mt-1 text-2xl font-extrabold">{['Tell us what works','A few thoughtful details','Review & confirm'][step]}</h2></div><button className="rounded-full bg-[#e9eee6] p-2" onClick={close} aria-label="Close visit form"><X size={17}/></button></div><div className="my-4 flex gap-1">{[0,1,2].map(i => <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-[#294b41]' : 'bg-[#e4e8df]'}`}/>)}</div>
-    {step === 0 && <div className="space-y-3"><label><Label>Child</Label><select className="field" value={child} onChange={e => setChild(e.target.value)}><option>Aarav Sharma</option><option>Isha Sharma</option></select></label><label><Label>Home address</Label><input className="field" value={address} onChange={e => setAddress(e.target.value)}/></label><label><Label>Preferred date</Label><input className="field" type="date" value={date} onChange={e => setDate(e.target.value)}/></label></div>}
-    {step === 1 && <div className="space-y-3"><label><Label>What would you like to focus on?</Label><select className="field" value={focus} onChange={e => setFocus(e.target.value)}><option>Study routine</option><option>Learning confidence</option><option>Wellbeing check-in</option><option>Family learning support</option></select></label><label><Label>Anything the visitor should know? (optional)</Label><textarea className="field min-h-24" value={special} onChange={e => setSpecial(e.target.value)} placeholder="Share only what feels helpful."/></label><div className="rounded-xl bg-[#f5ead2] p-3 text-xs leading-5 text-[#685c43]"><ShieldCheck size={15} className="mr-1 inline"/>Your child will be told about the visit. Visitors observe respectfully; no private spaces or personal items.</div></div>}
-    {step === 2 && <div><div className="rounded-xl bg-[#edf2eb] p-4"><div className="flex justify-between text-sm"><span>Family wellbeing visit</span><strong>Rs 999</strong></div><p className="mt-2 text-xs text-[#748177]">{child} · {date} · {focus}</p><p className="mt-2 text-xs text-[#748177]">{address}</p></div><div className="mt-3 rounded-xl border border-[#e8e5da] p-3 text-xs leading-5 text-[#6d7b70]">Child-notice: your child will know before the visit. Respectful observation only. If a visit is not permitted, the demo shows a full refund example.</div><label className="mt-3 flex items-center gap-2 text-xs"><input type="checkbox" defaultChecked/> I confirm the visit request and notice.</label><p className="mt-3 text-[10px] text-[#8b9288]">Fake payment only · no money is collected.</p></div>}
-    <div className="mt-5 flex justify-between gap-2">{step > 0 ? <Button kind="quiet" onClick={() => setStep(step - 1)}><ArrowLeft size={14}/> Back</Button> : <Button kind="quiet" onClick={close}>Cancel</Button>}{step < 2 ? <Button onClick={() => setStep(step + 1)}>Continue <ArrowRight size={14}/></Button> : <Button onClick={submit}>Confirm demo request</Button>}</div>
-  </div></div>;
-}
+
+/* ==================== FIELD AGENT WORKSPACE ==================== */
 
 function AgentScreen({ page, notify }: { page: string; notify: (s: string) => void }) {
-  const [checked, setChecked] = useState(false);
-  const [rating, setRating] = useState('On track');
-  const [draft, setDraft] = useState(true);
-  const tasks = [
-    { id: 'VIS-204', child: 'Aarav Sharma', time: '10:30 AM', place: 'Lake Road, Ranchi', state: 'In progress', focus: 'Study routine' },
-    { id: 'VIS-205', child: 'Isha Sharma', time: '3:00 PM', place: 'Lake Road, Ranchi', state: 'Upcoming', focus: 'Learning confidence' },
-    { id: 'VIS-198', child: 'Aarav Sharma', time: '08 Jun', place: 'Lake Road, Ranchi', state: 'Completed', focus: 'Wellbeing check-in' },
-  ];
-  const selected = tasks.find(t => page === 'Today' ? t.state === 'In progress' : page === 'Upcoming' ? t.state === 'Upcoming' : t.state === 'Completed') || tasks[0];
-  return <><PageHeading eyebrow="Field visit · mobile view" title={page === 'Today' ? 'Today, with care.' : page} subtitle="Only visit details needed for a respectful, safe check-in." action={<Button kind="secondary" onClick={() => notify('SOS acknowledged in demo. Admin safeguarding queue has been notified.')}>SOS</Button>}/><div className="grid gap-4 lg:grid-cols-[.82fr_1.18fr]"><div className="space-y-3">{tasks.map(t => <button key={t.id} onClick={() => notify(`${t.id} selected · ${t.focus}`)} className={`surface w-full p-4 text-left ${selected.id === t.id ? 'ring-2 ring-[#294b41]' : ''}`}><div className="flex justify-between"><Tag gold>{t.state}</Tag><span className="text-[10px] text-[#829087]">{t.time}</span></div><h3 className="mt-2 font-extrabold">{t.child}</h3><p className="mt-1 text-xs text-[#79877d]">{t.focus} · {t.place}</p></button>)}<Card className="!p-4"><p className="eyebrow">Offline mode</p><p className="mt-1 text-xs leading-5 text-[#718177]">Drafts remain on this device until the simulated sync.</p><div className="mt-3 flex gap-2"><Button kind="quiet" onClick={() => { setDraft(true); notify('Offline draft saved locally.'); }}>Save offline draft</Button><Tag>{draft ? 'Draft saved' : 'Synced'}</Tag></div></Card></div><div className="space-y-4"><Card><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="eyebrow">Selected visit · {selected.id}</p><h2 className="mt-1 text-2xl font-extrabold">{selected.child}</h2><p className="mt-1 text-xs text-[#78867c]">{selected.time} · {selected.place}</p></div><Tag>Guardian consent verified</Tag></div><div className="mt-4 rounded-xl bg-[#f4ead2] p-3 text-xs leading-5 text-[#665c46]"><ShieldCheck size={14} className="mr-1 inline"/>Child-notice confirmed. Ask permission before every activity. Respect a no without pressure.</div><div className="mt-4 flex flex-wrap gap-2"><Button onClick={() => { setChecked(true); notify('GPS check-in simulated · location is fictional.'); }}>{checked ? <Check size={15}/> : <Activity size={15}/>} {checked ? 'Checked in · GPS demo' : 'GPS check-in'}</Button><Button kind="quiet" onClick={() => notify('GPS check-out simulated · 28 minute visit logged.')}>Check out</Button></div></Card><Card><p className="eyebrow">Visit notes</p><h3 className="mt-1 text-lg font-extrabold">Structured observation</h3><div className="mt-3 grid gap-3 sm:grid-cols-2"><label><Label>Learning comfort</Label><select className="field" value={rating} onChange={e => setRating(e.target.value)}><option>On track</option><option>Needs support</option><option>Follow-up suggested</option></select></label><label><Label>Student choice</Label><select className="field"><option>Chose to participate</option><option>Preferred a pause</option><option>Declined activity</option></select></label></div><label className="mt-3 block"><Label>Private family note</Label><textarea className="field min-h-24" placeholder="Use factual, respectful language. Avoid diagnosis."/></label><label className="mt-3 flex items-center gap-2 text-xs text-[#6d7c72]"><input type="checkbox"/> Photo placeholder only (no real upload)</label><p className="mt-2 rounded-lg bg-[#f8efdf] p-2 text-[11px] text-[#765e3c]">Do not photograph other students.</p><div className="mt-4 flex flex-wrap gap-2"><Button kind="quiet" onClick={() => notify('Photo placeholder added to this demo report.')}>Add sample photo</Button><Button onClick={() => { setDraft(false); notify(`Visit report submitted · rating: ${rating}.`); }}>Submit report</Button></div></Card></div></div></>;
+  const [checkedIn, setCheckedIn] = useState(false);
+  const [rating, setRating] = useState('Green');
+
+  return (
+    <>
+      <PageHeading
+        eyebrow="Field Agent Portal"
+        title="Physical verification tasks."
+        subtitle="GPS check-in, structured observation checklists, and photo evidence."
+        action={
+          <Button kind="danger" onClick={() => notify('SOS Alert sent to Admin Safeguarding Team!')}>
+            Emergency SOS
+          </Button>
+        }
+      />
+
+      <div className="grid gap-5 lg:grid-cols-[1fr_1.2fr]">
+        <Card>
+          <h2 className="font-extrabold text-lg">Assigned Visit Tasks</h2>
+          <div className="mt-3 space-y-2">
+            <div className="rounded-xl border border-[#294b41] bg-[#edf2eb] p-3 text-xs">
+              <div className="flex justify-between font-bold">
+                <span>VIS-204 · Aarav Sharma</span>
+                <Tag gold>In Progress</Tag>
+              </div>
+              <p className="mt-1 text-[#627568]">12 Lake Road, Ranchi Hostel · Today 10:30 AM</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <h2 className="font-extrabold text-xl">Visit Execution & Checklist</h2>
+          <p className="mt-1 text-xs text-[#718177]">Location: 12 Lake Road, Ranchi Hostel</p>
+
+          <div className="mt-4 flex gap-2">
+            <Button
+              kind={checkedIn ? 'quiet' : 'primary'}
+              onClick={() => {
+                setCheckedIn(true);
+                notify('GPS check-in timestamped at 10:30 AM (Geotag verified).');
+              }}
+            >
+              {checkedIn ? '✓ GPS Checked In' : 'Perform GPS Check-In'}
+            </Button>
+            <Button kind="quiet" onClick={() => notify('GPS Check-Out logged.')}>
+              GPS Check-Out
+            </Button>
+          </div>
+
+          <div className="mt-5 space-y-3 border-t pt-4">
+            <h3 className="font-bold text-sm">Structured Observation Checklist</h3>
+
+            <div>
+              <Label>Hostel Hygiene & Living Condition</Label>
+              <select className="field">
+                <option>Green - Clean & Satisfactory</option>
+                <option>Amber - Minor Issues</option>
+                <option>Red - Unsatisfactory</option>
+              </select>
+            </div>
+
+            <div>
+              <Label>Food Quality & Mess Routine</Label>
+              <select className="field">
+                <option>Green - Fresh & Good Quality</option>
+                <option>Amber - Needs Improvement</option>
+              </select>
+            </div>
+
+            <div>
+              <Label>Field Agent Observation Notes</Label>
+              <textarea className="field min-h-20" placeholder="Factual observations only..." />
+            </div>
+
+            <div className="rounded-xl bg-[#f8efdf] p-3 text-xs text-[#765e3c]">
+              ⚠ <strong>Evidence Rule:</strong> Do not photograph other minors. Only photograph approved hostel common areas.
+            </div>
+
+            <Button onClick={() => notify('Report submitted for Admin Quality Review!')} className="w-full">
+              Submit Report to Admin Queue
+            </Button>
+          </div>
+        </Card>
+      </div>
+    </>
+  );
 }
+
+/* ==================== ADMIN WORKSPACE ==================== */
 
 function AdminScreen({ page, notify }: { page: string; notify: (s: string) => void }) {
-  const set = useDemoStore(s => s.set);
-  const apps = useDemoStore(s => s.scholarships);
-  const [tab, setTab] = useState('All visits');
-  const [reason, setReason] = useState('');
-   if (page === 'Visit queue') return <><PageHeading eyebrow="Operations · service quality" title="Visit queue." subtitle="Respectful scheduling with clear permission, SLA visibility and human review." action={<Button onClick={() => notify('Assignment saved to demo queue.')}>Assign agent</Button>}/><div className="mb-4 flex gap-2">{['All visits','Needs review','SLA watch'].map(t => <button onClick={() => setTab(t)} className={`rounded-full px-4 py-2 text-xs font-bold ${tab === t ? 'bg-[#294b41] text-white' : 'bg-[#e9eee7] text-[#62766a]'}`} key={t}>{t}</button>)}</div><div className="overflow-hidden rounded-2xl border border-[#e1e7dd] bg-[#fffefa]"><div className="hidden grid-cols-[1.2fr_1fr_1fr_.8fr_1fr] gap-2 bg-[#edf2eb] px-4 py-3 text-[10px] font-extrabold uppercase text-[#748278] md:grid"><span>Request</span><span>Child / focus</span><span>Agent</span><span>SLA</span><span>Actions</span></div>{[['VIS-205','Isha Sharma · Learning confidence','Unassigned','4h 10m','Pending'],['VIS-204','Aarav Sharma · Study routine','Meena Kumari','On time','In progress'],['VIS-177','Nisha K. · Home visit','Ritu Sinha','Closed','Not permitted']].map((r, i) => <div key={r[0]} className="grid gap-2 border-t border-[#edf0e9] px-4 py-4 md:grid-cols-[1.2fr_1fr_1fr_.8fr_1fr] md:items-center"><div><strong className="text-sm">{r[0]}</strong><p className="text-[10px] text-[#7b897f]">{i === 0 ? 'Requested 09:20' : i === 1 ? 'Today · 10:30' : 'Refund completed'}</p></div><span className="text-xs">{r[1]}</span><select className="field !py-2 text-xs"><option>{r[2]}</option><option>Meena Kumari</option><option>Ritu Sinha</option></select><Tag gold>{r[3]}</Tag><div className="flex gap-1"><Button kind="quiet" onClick={() => notify(`${r[0]} permission reviewed.`)}>Review</Button><Button kind="quiet" onClick={() => notify(`${r[0]} approved for service.`)}>Approve</Button><Button kind="quiet" onClick={() => notify(`${r[0]} sent back for edits.`)}>Send back</Button></div></div>)}</div></>;
-  if (page === 'Agents') return <><PageHeading eyebrow="People & field operations" title="Agent directory." subtitle="Fictional service team profiles, capacity and safety training." action={<Button onClick={() => notify('New agent profile form opened.')}>Add agent</Button>}/><div className="grid gap-3 md:grid-cols-2">{[['Meena Kumari','Ranchi · Hindi, English','4.9 · 14 visits','Available'],['Ritu Sinha','Patna · Hindi, Maithili','4.8 · 11 visits','On visit'],['Amit Kerketta','Jamshedpur · Hindi, Santali','4.7 · 8 visits','Available']].map(a => <Card key={a[0]}><div className="flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#e8eddf] font-bold">{a[0].split(' ').map(x => x[0]).join('')}</div><div className="flex-1"><h3 className="font-extrabold">{a[0]}</h3><p className="text-xs text-[#7b887e]">{a[1]}</p></div><Tag>{a[3]}</Tag></div><div className="mt-4 flex justify-between text-xs text-[#6c7d72]"><span>{a[2]}</span><span>Safeguarding trained</span></div><Button kind="quiet" onClick={() => notify(`${a[0]} availability details opened.`)}>View profile</Button></Card>)}</div></>;
-  if (page === 'Scholarships') return <><PageHeading eyebrow="Access review" title="Scholarship applications." subtitle="Approvals grant Free Access with a clear expiry. Decisions remain simulated."/><div className="space-y-3">{apps.map(a => <Card key={a.id} className="!p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><Tag gold>{a.status}</Tag><span className="text-[10px] text-[#819086]">{a.id}</span></div><h3 className="mt-2 text-lg font-extrabold">{a.student}</h3><p className="text-xs text-[#78867c]">{a.reason} · Documents: fictional placeholder</p></div><div className="flex flex-wrap gap-2"><Button onClick={() => { set({ entitlement: 'Free Access', approved: true, scholarships: apps.map(x => x.id === a.id ? { ...x, status: 'Approved · 90 days' } : x) }); notify('Approved · Free Access granted for 90 days in demo.'); }}>Approve</Button><Button kind="quiet" onClick={() => { setReason('Eligibility details do not match demo criteria'); notify('Rejected with recorded reason.'); }}>Reject</Button><Button kind="quiet" onClick={() => { setReason('Please share updated eligibility information'); notify('Information request sent in demo.'); }}>Request info</Button></div></div><div className="mt-3"><Label>Decision reason</Label><input className="field !py-2" value={reason} onChange={e => setReason(e.target.value)} placeholder="Add a short, clear reason"/></div></Card>)}</div><Button kind="secondary" onClick={() => { set({ entitlement: 'Free Access', approved: true }); notify('Fast-forward complete: scholarship approved, Free Access valid for 90 days.'); }}>Fast-forward approval</Button></>;
-  if (page === 'Content') return <><PageHeading eyebrow="Learning content studio" title="Keep the library thoughtful." subtitle="Manage taxonomy, free-pack settings, item status and board coverage." action={<Button onClick={() => notify('New content item form opened.')}>New content item</Button>}/><Card><div className="grid gap-3 md:grid-cols-4"><label><Label>Board</Label><select className="field">{boards.map(b => <option key={b}>{b}</option>)}</select></label><label><Label>Class</Label><select className="field">{Array.from({length:7},(_,i)=><option key={i}>{i+6}</option>)}</select></label><label><Label>Subject</Label><input className="field" placeholder="Mathematics"/></label><label><Label>Chapter / topic</Label><input className="field" placeholder="Chapter and topic name"/></label></div><div className="mt-3 grid gap-3 sm:grid-cols-3"><label><Label>Content type</Label><select className="field"><option>Video</option><option>PDF</option><option>Print</option><option>Images</option></select></label><label><Label>Status</Label><select className="field"><option>Draft</option><option>In review</option><option>Published</option><option>Archived</option></select></label><label><Label>Access</Label><select className="field"><option>Free starter</option><option>Premium</option></select></label></div><div className="mt-4 flex gap-2"><Button onClick={() => notify('Content saved as draft.')}>Save draft</Button><Button kind="quiet" onClick={() => notify('Content submitted for review.')}>Submit for review</Button></div></Card><Card className="mt-4"><div className="flex items-end justify-between"><div><p className="eyebrow">Coverage matrix</p><h3 className="mt-1 text-lg font-extrabold">Six boards · classes 6–12</h3></div><Tag>42 combinations</Tag></div><div className="mt-3 overflow-x-auto"><table className="w-full min-w-[660px] text-left text-xs"><thead><tr className="text-[#819087]"><th className="p-2">Board</th>{Array.from({length:7},(_,i)=><th key={i} className="p-2">Class {i+6}</th>)}</tr></thead><tbody>{boards.map((b, bi)=><tr key={b} className="border-t border-[#edf0e9]"><td className="p-2 font-bold">{b}</td>{Array.from({length:7},(_,i)=><td key={i} className="p-2"><span className={`rounded-full px-2 py-1 text-[9px] font-bold ${bi < 2 && i < 2 ? 'bg-[#e3eee1] text-[#416251]' : 'bg-[#f2f1eb] text-[#9a9e91]'}`}>{bi < 2 && i < 2 ? 'Published' : 'Coming soon'}</span></td>)}</tr>)}</tbody></table></div></Card><Card className="mt-4"><p className="eyebrow">Free pack settings</p><div className="mt-3 flex flex-wrap gap-2">{['3 counselling videos','2 board masterclasses','3 sample PDFs'].map(s=><Tag key={s}>{s}</Tag>)}</div><Button kind="quiet" onClick={() => notify('Starter pack settings saved.')}>Edit pack settings</Button></Card></>;
-  if (page === 'Plans & orders' || page === 'Users & payments') return <><PageHeading eyebrow="Commerce · demo tables" title={page === 'Plans & orders' ? 'Plans & print orders.' : 'Users & payment records.'} subtitle="Placeholder data only. No real payments or transactions are connected."/><div className="grid gap-4 md:grid-cols-3"><Card><p className="eyebrow">Monthly plan</p><h3 className="mt-2 text-2xl font-extrabold">Rs 199</h3><p className="text-xs text-[#7d8b80]">Placeholder · active</p><Button kind="quiet" onClick={() => notify('Plan placeholder edited.')}>Edit plan</Button></Card><Card><p className="eyebrow">Annual plan</p><h3 className="mt-2 text-2xl font-extrabold">Rs 1,499</h3><p className="text-xs text-[#7d8b80]">Placeholder · active</p><Button kind="quiet" onClick={() => notify('Plan placeholder edited.')}>Edit plan</Button></Card><Card><p className="eyebrow">Demo orders</p><h3 className="mt-2 text-2xl font-extrabold">12</h3><p className="text-xs text-[#7d8b80]">5 print · 7 plan previews</p></Card></div><Card className="mt-4 overflow-x-auto"><table className="w-full min-w-[600px] text-left text-xs"><thead><tr className="border-b border-[#e6eae2] text-[#839087]"><th className="p-3">Record</th><th className="p-3">Family</th><th className="p-3">Item</th><th className="p-3">Amount</th><th className="p-3">Status</th><th className="p-3">Action</th></tr></thead><tbody>{[['ORD-061','Priya Sharma','Maths practice set','Rs 149','Packed'],['PAY-042','Sanjay Kumar','Monthly plan','Rs 199','Demo paid'],['ORD-058','Mira Das','Science notes','Rs 99','Delivered']].map(row=><tr key={row[0]} className="border-b border-[#edf0e9]"><td className="p-3 font-bold">{row[0]}</td><td className="p-3">{row[1]}</td><td className="p-3">{row[2]}</td><td className="p-3">{row[3]}</td><td className="p-3"><Tag>{row[4]}</Tag></td><td className="p-3"><button className="underline" onClick={() => notify(`${row[0]} details opened.`)}>Open</button></td></tr>)}</tbody></table></Card></>;
-  if (page === 'Safeguarding') return <><PageHeading eyebrow="Safety first" title="Safeguarding alerts." subtitle="Review escalations carefully, privately and with a documented next step."/><div className="space-y-3">{[['AL-019','Risk phrase flagged','Student message included a risk phrase · 10:42 AM','Urgent'],['AL-016','Visit boundary concern','Agent requested supervisor review · 09:18 AM','Review'],['AL-012','Guardian consent pending','Visit paused until consent is confirmed · Yesterday','Waiting']].map(a=><Card key={a[0]} className="!p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><Tag red>{a[3]}</Tag><h3 className="mt-2 font-extrabold">{a[1]}</h3><p className="mt-1 text-xs text-[#77857b]">{a[0]} · {a[2]}</p></div><div className="flex gap-2"><Button kind="quiet" onClick={() => notify('Escalation acknowledged. Follow safeguarding protocol.')}>Acknowledge</Button><Button onClick={() => notify('Counsellor lead alerted in demo.')}>Alert lead</Button></div></div></Card>)}</div><div className="mt-4 rounded-2xl bg-[#f6e8e2] p-4 text-xs leading-5 text-[#885a4e]"><ShieldCheck size={16} className="mr-2 inline"/>Never use automated diagnosis. Escalate risk to a trained professional and provide emergency resources.</div></>;
-  return <><PageHeading eyebrow="Service overview" title="A steady service, at a glance." subtitle="Demo operations for family visits, learning access and safeguarding." action={<Button kind="quiet" onClick={() => notify('Dashboard report exported as a local demo summary.')}>Export summary</Button>}/><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[['28','Visits this month','+4 this week'],['3','Awaiting review','1 near SLA'],['91%','On-time visits','last 30 days'],['14','Scholarship requests','4 approved']].map(k=><Card key={k[1]} className="!p-4"><p className="eyebrow">{k[1]}</p><div className="mt-2 text-3xl font-extrabold">{k[0]}</div><p className="mt-1 text-xs text-[#7e8c81]">{k[2]}</p></Card>)}</div><div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_.8fr]"><Card><div className="flex justify-between"><div><p className="eyebrow">Today</p><h2 className="mt-1 text-xl font-extrabold">Requests to care for.</h2></div><Tag gold>3 active</Tag></div><div className="mt-4 space-y-2">{[['VIS-205','Isha Sharma','Assign a field agent','Pending'],['VIS-204','Aarav Sharma','Visit in progress','On time'],['VIS-177','Nisha K.','Permission declined · refund','Closed']].map(v=><div key={v[0]} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#f2f4ee] p-3"><div><strong className="text-sm">{v[0]} · {v[1]}</strong><p className="text-[10px] text-[#7c897f]">{v[2]}</p></div><Tag>{v[3]}</Tag><Button kind="quiet" onClick={() => notify(`${v[0]} queue detail opened.`)}>Review</Button></div>)}</div></Card><Card className="bg-[#f4ead2]"><p className="eyebrow">Safeguarding</p><h2 className="mt-2 text-3xl font-extrabold">2 alerts</h2><p className="mt-1 text-sm text-[#738075]">1 urgent · 1 awaiting acknowledgement</p><Button onClick={() => set({ activePage: 'Safeguarding' })}>Open safety queue</Button></Card></div><Card className="mt-4"><p className="eyebrow">Recently reviewed</p><div className="mt-3 flex flex-wrap gap-2">{['12 June · Consent flow updated','11 June · Free pack content approved','10 June · Visit follow-up closed'].map(v=><Tag key={v}>{v}</Tag>)}</div></Card></>;
+  const visits = useDemoStore((s) => s.visits);
+  const scholarships = useDemoStore((s) => s.scholarships);
+  const set = useDemoStore((s) => s.set);
+
+  if (page === 'Scholarships') {
+    return (
+      <>
+        <PageHeading
+          eyebrow="Admin Operations"
+          title="EWS Scholarship Approval Queue."
+          subtitle="Review uploaded income documents and grant automatic Free Access."
+        />
+
+        <div className="space-y-4">
+          {scholarships.map((s) => (
+            <Card key={s.id}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Tag gold={s.status.includes('Submitted')} green={s.status.includes('Approved')}>
+                      {s.status}
+                    </Tag>
+                    <span className="text-xs font-mono">{s.id}</span>
+                  </div>
+                  <h3 className="mt-2 text-lg font-extrabold">{s.student}</h3>
+                  <p className="text-xs text-[#718177]">
+                    State: {s.state} · Income: {s.income} · Doc: {s.documentName}
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      set({
+                        entitlement: 'Free Access',
+                        scholarships: scholarships.map((x) => (x.id === s.id ? { ...x, status: 'Approved · 90 days' } : x)),
+                      });
+                      notify(`Scholarship ${s.id} Approved! Entitlement updated to Free Access.`);
+                    }}
+                  >
+                    Approve & Grant Free Access
+                  </Button>
+                  <Button kind="quiet" onClick={() => notify(`Rejection logged for ${s.id}.`)}>
+                    Reject
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <PageHeading eyebrow="Admin Portal" title="Platform Overview & Operations." subtitle="System metrics, visits, and content matrix." />
+      <div className="grid gap-4 sm:grid-cols-4">
+        <Card>
+          <p className="eyebrow">Total Registered Users</p>
+          <h3 className="text-3xl font-extrabold mt-1">1,240</h3>
+        </Card>
+        <Card>
+          <p className="eyebrow">Free to Paid Conversion</p>
+          <h3 className="text-3xl font-extrabold mt-1">14.2%</h3>
+        </Card>
+        <Card>
+          <p className="eyebrow">Visits This Month</p>
+          <h3 className="text-3xl font-extrabold mt-1">{visits.length}</h3>
+        </Card>
+        <Card>
+          <p className="eyebrow">Pending EWS Applications</p>
+          <h3 className="text-3xl font-extrabold mt-1">1</h3>
+        </Card>
+      </div>
+    </>
+  );
 }
+
+/* ==================== COUNSELLOR WORKSPACE ==================== */
 
 function CounsellorScreen({ page, notify }: { page: string; notify: (s: string) => void }) {
-  const [availability, setAvailability] = useState('Available');
-  const [accepted, setAccepted] = useState(false);
-  const [note, setNote] = useState('');
-  const [reply, setReply] = useState('');
-  return <><PageHeading eyebrow="Counsellor console" title={page === 'Availability' ? 'Your availability.' : 'Sessions, held with care.'} subtitle="Fictional session workspace for demonstrating a thoughtful, privacy-aware practice." action={page === 'Availability' ? <select className="field !w-auto" value={availability} onChange={e => { setAvailability(e.target.value); notify(`Availability set to ${e.target.value}.`); }}><option>Available</option><option>Busy</option><option>Offline</option></select> : <Tag gold>Today · 3 sessions</Tag>}/>{page === 'Availability' ? <Card><p className="eyebrow">Current schedule</p><h2 className="mt-2 text-2xl font-extrabold">{availability}</h2><p className="mt-2 text-sm text-[#76847a]">You control when you can accept a student session.</p><div className="mt-4 flex gap-2"><Button onClick={() => { setAvailability('Available'); notify('You are available in the demo.'); }}>Set available</Button><Button kind="quiet" onClick={() => { setAvailability('Offline'); notify('You are offline in the demo.'); }}>Go offline</Button></div></Card> : <div className="grid gap-4 lg:grid-cols-[.8fr_1.2fr]"><div className="space-y-3">{[['10:00','Aarav S.','Study stress','Waiting'],['11:30','Mira K.','Friendship','Accepted'],['2:00','Rohan D.','Confidence','Upcoming']].map(s=><Card key={s[0]} className="!p-4"><div className="flex items-center justify-between"><Tag gold>{s[3]}</Tag><span className="text-xs text-[#7e8b81]">{s[0]}</span></div><h3 className="mt-2 font-extrabold">{s[1]}</h3><p className="text-xs text-[#758379]">{s[2]} · 25 min</p><Button onClick={() => { setAccepted(true); notify('Session accepted. Private workspace opened.'); }}>{accepted ? 'Open session' : 'Accept session'}</Button></Card>)}</div><Card><div className="flex items-center justify-between"><div><p className="eyebrow">Private session workspace</p><h2 className="mt-1 text-xl font-extrabold">Aarav S. · Check-in</h2></div><Tag>Confidential</Tag></div><div className="mt-4 rounded-2xl bg-[#e8eee6] p-4"><div className="space-y-2 text-xs"><div className="w-fit rounded-xl bg-white px-3 py-2">I have a lot of exams coming up.</div><div className="ml-auto w-fit rounded-xl bg-[#294b41] px-3 py-2 text-white">That sounds like a lot to hold. What feels most important right now?</div><div className="w-fit rounded-xl bg-white px-3 py-2">I want to feel less behind.</div></div><div className="mt-4 flex gap-2"><input className="field !bg-white" placeholder="Type a supportive reply" value={reply} onChange={e => setReply(e.target.value)}/><Button onClick={() => { if (reply.trim()) { notify('Reply added to the simulated chat.'); setReply(''); } }}>Send</Button></div></div><label className="mt-4 block"><Label>Private counsellor notes (not visible to family)</Label><textarea className="field min-h-24" value={note} onChange={e => setNote(e.target.value)} placeholder="Record factual, confidential notes."/></label><div className="mt-3 flex flex-wrap gap-2"><Button kind="quiet" onClick={() => notify('Private note saved locally.')}>Save private note</Button><Button kind="secondary" onClick={() => notify('Risk escalation recorded. Supervisor has been alerted in demo.')}>Escalate risk</Button><Button kind="quiet" onClick={() => notify('Session marked complete.')}>End session</Button></div></Card></div>}</>;
+  return (
+    <>
+      <PageHeading eyebrow="Counsellor Console" title="Live Sessions & Student Care." subtitle="Private workspace for audio/video sessions." />
+      <Card>
+        <h2 className="font-extrabold text-xl">Today's Sessions</h2>
+        <div className="mt-3 rounded-xl bg-[#edf2eb] p-4 text-xs">
+          <div className="flex justify-between font-bold">
+            <span>Aarav Sharma · Study Stress Check-in</span>
+            <Tag green>Accepted</Tag>
+          </div>
+          <p className="mt-2 text-[#5a6b5e]">Scheduled: 10:30 AM · Audio/Video Session</p>
+          <Button className="mt-3" onClick={() => notify('Counsellor session started.')}>
+            Open Video Call Workspace
+          </Button>
+        </div>
+      </Card>
+    </>
+  );
 }
 
+/* ==================== HELPERS & MODALS ==================== */
+
 function HelpSheet({ close, notify }: { close: () => void; notify: (s: string) => void }) {
-  return <div className="fixed inset-0 z-[60] grid place-items-end bg-[#14251f]/45 p-0 backdrop-blur-sm sm:place-items-center sm:p-4"><div role="dialog" aria-modal="true" aria-labelledby="help-title" className="w-full max-w-md rounded-t-[26px] bg-[#faf9f3] p-6 sm:rounded-[26px]"><div className="flex items-start justify-between"><div><p className="eyebrow">Support, always</p><h2 id="help-title" className="mt-1 text-2xl font-extrabold">You do not have to manage alone.</h2></div><button onClick={close} className="rounded-full bg-[#e9eee6] p-2" aria-label="Close help"><X size={17}/></button></div><p className="mt-3 text-sm leading-6 text-[#687b70]">If you or someone else may be in immediate danger, seek help now.</p><div className="mt-4 space-y-2"><div className="flex items-center justify-between rounded-xl bg-[#e9f0e7] p-4"><span><strong className="block">Tele-MANAS</strong><small className="text-xs text-[#718177]">Mental health support · India</small></span><strong className="text-lg">14416</strong></div><div className="flex items-center justify-between rounded-xl bg-[#f6e8df] p-4"><span><strong className="block">Emergency services</strong><small className="text-xs text-[#85665b]">Immediate help</small></span><strong className="text-lg">112</strong></div></div><Button className="mt-3 w-full" onClick={() => { close(); notify('Counsellor chat preview opened. This is not a real service.'); }}><MessageCircle size={15}/> Chat with a counsellor</Button><p className="mt-4 rounded-xl bg-[#f2f0e8] p-3 text-[11px] leading-5 text-[#747c70]">This app does not replace professional medical care.</p></div></div>;
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h2 className="font-extrabold text-xl text-[#294b41]">Emergency & Helpline Directory</h2>
+          <button onClick={close}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <p className="mt-3 text-xs leading-5 text-[#617367]">
+          If you or someone you know is in distress, immediate help is available 24/7 across India.
+        </p>
+
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center justify-between rounded-xl bg-[#e9f0e7] p-3 text-xs">
+            <div>
+              <strong className="block text-sm">Tele-MANAS (Govt of India)</strong>
+              <span className="text-[#647568]">Mental Health Helpline</span>
+            </div>
+            <span className="text-base font-extrabold text-[#294b41]">14416</span>
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl bg-[#f6e8df] p-3 text-xs">
+            <div>
+              <strong className="block text-sm">Emergency Services</strong>
+              <span className="text-[#85665b]">Police / Ambulance</span>
+            </div>
+            <span className="text-base font-extrabold text-[#c85a4b]">112</span>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-xl bg-[#f5f7f2] p-3 text-[11px] text-[#718177]">
+          Note: This prototype provides simulated support. It does not replace professional medical or crisis care.
+        </div>
+
+        <Button className="mt-4 w-full" onClick={close}>
+          Close Helpline Directory
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 function SessionModal({ close, notify }: { close: () => void; notify: (s: string) => void }) {
-  const [message, setMessage] = useState('');
+  const [mode, setMode] = useState<'Chat' | 'Voice' | 'Video'>('Chat');
+  const [msg, setMsg] = useState('');
+  const [messages, setMessages] = useState<string[]>(['Hello! I am Dr. Rhea Menon. How can I support you today?']);
   const [muted, setMuted] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const send = () => {
-    if (/hopeless|hurt myself/i.test(message)) notify('A risk phrase was noticed. Tele-MANAS 14416 and emergency 112 are available. A counsellor has been alerted in this demo.');
-    else notify('A supportive reply is ready: “Thank you for sharing. What would feel helpful right now?”');
-    setMessage('');
+  const [riskTriggered, setRiskTriggered] = useState(false);
+
+  const sendMessage = () => {
+    if (!msg.trim()) return;
+    const text = msg;
+    setMessages((prev) => [...prev, `You: ${text}`]);
+
+    if (/hopeless|hurt myself|depressed|cannot handle/i.test(text)) {
+      setRiskTriggered(true);
+      notify('Safety Alert: Crisis keywords detected. Tele-MANAS helpline card displayed.');
+    } else {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          'Dr. Rhea: Thank you for sharing that with me. What feels most important to focus on right now?',
+        ]);
+      }, 1000);
+    }
+    setMsg('');
   };
-  return <div className="fixed inset-0 z-50 grid place-items-end bg-[#14251f]/55 p-0 backdrop-blur-sm sm:place-items-center sm:p-4"><div className="w-full max-w-xl rounded-t-[26px] bg-[#faf9f3] p-5 sm:rounded-[26px]"><div className="flex items-center justify-between"><div><p className="eyebrow">Simulated live session</p><h2 className="text-xl font-extrabold">Dr. Rhea Menon</h2></div><button onClick={close} className="rounded-full bg-[#e9eee6] p-2" aria-label="Close session"><X size={17}/></button></div><div className="mt-3 rounded-xl bg-[#f5ead2] p-3 text-xs leading-5 text-[#6a5f49]"><ShieldCheck size={14} className="mr-1 inline"/>You choose what to share. If a risk phrase appears, helplines and an alert are shown.</div><div className="mt-3 grid aspect-video grid-cols-2 gap-2"><div className="grid place-items-center rounded-2xl bg-[#e6ece2]"><div className="text-center"><div className="mx-auto grid h-14 w-14 place-items-center rounded-[18px] bg-[#f2dfb7] font-bold">RM</div><p className="mt-2 text-xs font-bold">Dr. Rhea · video tile</p></div></div><div className="grid place-items-center rounded-2xl bg-[#dbe7e9]"><div className="text-center"><Video className="mx-auto" size={22}/><p className="mt-2 text-xs font-bold">Your camera is off</p></div></div></div><div className="mt-3 flex flex-wrap items-center justify-between gap-2"><div className="flex gap-2"><Button kind="quiet" onClick={() => setMuted(!muted)}><Mic size={14}/>{muted ? 'Unmute' : 'Mute'}</Button><Button kind="quiet" onClick={() => setSeconds(seconds + 30)}><Volume2 size={14}/>Voice timer {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2,'0')}</Button></div><div className="flex gap-1"><Button kind="quiet" onClick={() => notify('Report submitted to the demo safeguarding queue.')}>Report</Button><Button kind="quiet" onClick={() => { notify('Professional blocked in this demo.'); close(); }}>Block</Button></div></div><div className="mt-3 flex gap-2"><input data-testid="input-session-message" className="field" value={message} onChange={e => setMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Try a message, or type “hopeless” to preview safety alert"/><Button onClick={send}>Send</Button></div><div className="mt-2 flex flex-wrap gap-2">{['I feel nervous','I want to talk','Can we pause?'].map(t=><button key={t} onClick={() => setMessage(t)} className="rounded-full bg-[#edf2eb] px-3 py-1.5 text-[10px] font-bold">{t}</button>)}</div></div></div>;
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="flex justify-between items-center border-b pb-3">
+          <div>
+            <h2 className="font-extrabold text-lg">Live Counsellor Session</h2>
+            <p className="text-xs text-[#718177]">Dr. Rhea Menon · Adolescent Counsellor</p>
+          </div>
+          <button onClick={close}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Mode Selector */}
+        <div className="my-3 flex justify-center gap-2">
+          {(['Chat', 'Voice', 'Video'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`rounded-full px-4 py-1.5 text-xs font-bold ${
+                mode === m ? 'bg-[#294b41] text-white' : 'bg-[#edf2eb] text-[#5e7164]'
+              }`}
+            >
+              {m === 'Chat' ? <MessageCircle size={14} className="mr-1 inline" /> : m === 'Voice' ? <PhoneCall size={14} className="mr-1 inline" /> : <Video size={14} className="mr-1 inline" />}
+              {m} Mode
+            </button>
+          ))}
+        </div>
+
+        {/* Risk Trigger Banner */}
+        {riskTriggered && (
+          <div className="mb-3 rounded-xl bg-[#fce8e6] border border-[#f5b3ad] p-3 text-xs text-[#8a2d24]">
+            <AlertTriangle size={16} className="mr-1 inline" />
+            <strong>Crisis Support Alert:</strong> You are not alone. Reach Tele-MANAS at <strong>14416</strong> or Emergency <strong>112</strong> immediately.
+          </div>
+        )}
+
+        {mode === 'Chat' ? (
+          <div className="space-y-3">
+            <div className="h-48 overflow-y-auto rounded-xl border bg-[#f9faf7] p-3 text-xs space-y-2">
+              {messages.map((m, i) => (
+                <div key={i} className={`p-2 rounded-lg ${m.startsWith('You:') ? 'bg-[#294b41] text-white ml-auto max-w-[80%]' : 'bg-[#e4ebe1] text-[#243b31] max-w-[80%]'}`}>
+                  {m}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                className="field"
+                placeholder="Type your message... (Try 'hopeless' to test safety alert)"
+                value={msg}
+                onChange={(e) => setMsg(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+              />
+              <Button onClick={sendMessage}>Send</Button>
+            </div>
+          </div>
+        ) : mode === 'Voice' ? (
+          <div className="py-8 text-center bg-[#f4f7f3] rounded-xl">
+            <Mic size={40} className={`mx-auto ${muted ? 'text-red-500' : 'text-[#294b41]'}`} />
+            <p className="mt-3 font-bold text-sm">Voice Call Session Active</p>
+            <p className="text-xs text-[#718177]">Duration: 03:45 · Encrypted In-App Audio</p>
+            <Button kind="quiet" className="mt-4" onClick={() => setMuted(!muted)}>
+              {muted ? 'Unmute Microphone' : 'Mute Microphone'}
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2 aspect-video bg-[#1a2e26] rounded-xl p-2 text-white text-center place-items-center">
+            <div className="rounded-lg bg-[#274438] p-4 w-full h-full flex flex-col justify-center items-center">
+              <Video size={28} />
+              <span className="text-xs mt-2 font-bold">Dr. Rhea Menon</span>
+            </div>
+            <div className="rounded-lg bg-[#1f362c] p-4 w-full h-full flex flex-col justify-center items-center text-xs">
+              <span>Your Video Tile</span>
+              <span className="text-[10px] text-[#91a89d] mt-1">In-App Encryption</span>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 flex justify-between border-t pt-3">
+          <Button kind="quiet" onClick={() => notify('Session reported to safeguarding lead.')}>
+            Report Session
+          </Button>
+          <Button kind="danger" onClick={close}>
+            End Session
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function PaywallSheet({ close, notify }: { close: () => void; notify: (s: string) => void }) {
-  const student = useDemoStore(s => s.student);
-  const set = useDemoStore(s => s.set);
-  const [plan, setPlan] = useState('Monthly · Rs 199');
-  const [method, setMethod] = useState('UPI');
-  const under18 = student.age < 18;
-  return <div className="fixed inset-0 z-[55] grid place-items-end bg-[#14251f]/50 p-0 backdrop-blur-sm sm:place-items-center sm:p-4"><div className="max-h-[92dvh] w-full max-w-xl overflow-y-auto rounded-t-[26px] bg-[#faf9f3] p-5 sm:rounded-[26px] sm:p-7" role="dialog" aria-modal="true" aria-labelledby="paywall-title"><div className="flex items-start justify-between"><div><p className="eyebrow">More room to learn</p><h2 id="paywall-title" className="mt-1 text-3xl font-extrabold">Choose your next step.</h2><p className="mt-1 text-sm text-[#77857a]">Plans are placeholders for this demo. No payment is collected.</p></div><button onClick={close} aria-label="Close plans" className="rounded-full bg-[#e9eee6] p-2"><X size={17}/></button></div><div className="mt-4 grid gap-3 sm:grid-cols-2">{[['Monthly · Rs 199','Flexible access'],['Annual · Rs 1,499','A full year of learning']].map(p=><button onClick={()=>setPlan(p[0])} key={p[0]} className={`rounded-2xl border p-4 text-left ${plan===p[0]?'border-[#294b41] bg-[#eaf0e7]':'border-[#e3e8df] bg-white'}`}><span className="flex items-center justify-between text-sm font-extrabold">{p[0]}{plan===p[0]&&<Check size={16}/>}</span><span className="mt-1 block text-xs text-[#748177]">{p[1]}</span></button>)}</div><Card className="mt-3 !bg-[#f4ead2] !p-4"><p className="font-extrabold">Included with Premium</p><div className="mt-2 grid gap-2 text-xs text-[#69796e] sm:grid-cols-2">{['All board lessons and masterclasses','Print-ready practice sets','Live counsellor sessions','Progress and saved notes'].map(t=><span key={t}><Check size={13} className="mr-1 inline text-[#597d60]"/>{t}</span>)}</div></Card>{under18 ? <div className="mt-4 rounded-2xl border border-[#ead9b3] bg-[#fbf3e4] p-4"><p className="font-bold">A parent or guardian needs to pay.</p><p className="mt-1 text-xs leading-5 text-[#786c54]">Because this student is under 18, payment must be completed by a parent or guardian.</p><div className="mt-3 flex flex-wrap gap-2"><Button onClick={()=>notify('Parent-pay link copied in demo. No payment link was sent.')}>Ask parent to pay</Button><Button kind="quiet" onClick={()=>notify('EWS application started · SCH-041 is under review.')}>Apply for EWS access</Button></div></div> : <div className="mt-4"><Label>Demo payment method</Label><div className="flex flex-wrap gap-2">{['UPI','Card','Netbanking'].map(m=><button onClick={()=>setMethod(m)} key={m} className={`rounded-xl border px-4 py-2 text-xs font-bold ${method===m?'border-[#294b41] bg-[#eaf0e7]':'border-[#e4e8df]'}`}>{m}</button>)}</div><Button className="mt-3" onClick={()=>{ set({entitlement:'Premium'}); close(); notify(`Demo ${method} payment complete · ${plan} access enabled.`); }}>Continue with {method} · demo only</Button></div>}<div className="mt-4 flex flex-wrap gap-3 border-t border-[#e8ebe4] pt-3"><button onClick={()=>notify('Restore access checked. No purchase is linked in this demo.')} className="text-xs font-bold text-[#456457] underline">Restore access</button><button onClick={()=>notify('Scholarship application form opened for demo.')} className="text-xs font-bold text-[#456457] underline">Apply for EWS support</button></div></div></div>;
+  const student = useDemoStore((s) => s.student);
+  const set = useDemoStore((s) => s.set);
+  const [plan, setPlan] = useState('Monthly · ₹199');
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h2 className="font-extrabold text-xl">EduCare Learning Plans</h2>
+          <button onClick={close}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          <div className="rounded-xl border border-[#294b41] bg-[#eaf0e7] p-4">
+            <div className="flex justify-between font-bold">
+              <span>Monthly Subscription</span>
+              <span>₹199 / mo</span>
+            </div>
+            <p className="mt-1 text-xs text-[#5e7164]">Full access to all 6 boards, videos, PDFs & live support.</p>
+          </div>
+
+          {student.age < 18 && (
+            <div className="rounded-xl bg-[#fbf3e4] border border-[#ead9b3] p-3 text-xs text-[#786c54]">
+              <strong>Under-18 Minor Notice:</strong> Payment must be made by a parent or guardian.
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              className="w-full"
+              onClick={() => {
+                set({ entitlement: 'Premium' });
+                close();
+                notify('Demo payment successful! Premium access enabled.');
+              }}
+            >
+              Simulate Demo Payment (₹199)
+            </Button>
+            <Button kind="quiet" className="w-full" onClick={() => notify('Shareable parent payment link copied.')}>
+              Ask Parent to Pay
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function Onboarding({ close }: { close: () => void }) {
+function StarterPackCelebrationModal({ close }: { close: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
+        <Sparkles size={48} className="mx-auto text-[#cfaa61]" />
+        <h2 className="mt-3 text-2xl font-extrabold text-[#294b41]">🎉 Free Starter Pack Unlocked!</h2>
+        <p className="mt-2 text-xs leading-5 text-[#67776b]">
+          Parent consent has been verified. You now have full access to your free starter pack!
+        </p>
+
+        <div className="my-4 space-y-2 rounded-xl bg-[#f5f7f2] p-4 text-left text-xs">
+          <div className="font-bold text-[#294b41]">Included in your starter bundle:</div>
+          <div className="flex items-center gap-2">✓ 3 Mental Health & Counselling Videos</div>
+          <div className="flex items-center gap-2">✓ 2 Board Syllabus Masterclasses</div>
+          <div className="flex items-center gap-2">✓ 3 Printable Sample PDF Chapter Notes</div>
+        </div>
+
+        <Button className="w-full" onClick={close}>
+          Start Exploring Now
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function Onboarding({ close, notify }: { close: () => void; notify: (s: string) => void }) {
   const [step, setStep] = useState(0);
-  const [role, setRole] = useState<Role>('Parent');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [childName, setChildName] = useState('Aarav Sharma');
-  const [className, setClassName] = useState('10');
-  const [board, setBoard] = useState('CBSE');
-  const [medium, setMedium] = useState('English');
-  const [guardian, setGuardian] = useState('98765 43210');
+  const [role, setRole] = useState<Role>('Student');
   const [consentChecked, setConsentChecked] = useState(false);
-  const setDemo = useDemoStore(s => s.set);
-  const next = () => {
-    if (step === 0) { setDemo({ role, activePage: navByRole[role][0] }); setStep(1); }
-    else if (step === 1) { setStep(2); }
-    else if (step === 2) { setStep(3); }
-    else { setDemo({ consent: true, entitlement: 'Free', student: { ...useDemoStore.getState().student, name: childName, className, board, medium, guardian, age: Number(className) + 5 }, onboardingStep: 4 }); close(); }
+
+  const setDemo = useDemoStore((s) => s.set);
+
+  const finishOnboarding = () => {
+    setDemo({ consent: true, entitlement: 'Free', showStarterCelebration: true });
+    close();
+    notify('Onboarding complete! Free starter pack unlocked.');
   };
-  const isHindi = useDemoStore(s => s.language) === 'हिन्दी';
-  const title = ['Start with a little hello','Choose your family role','Make this learning space yours','A parent’s consent matters'][step];
-  return <div className="surface fade-in mx-auto max-w-2xl p-5 md:p-7"><div className="flex items-start justify-between"><div><p className="eyebrow">A gentle first step · {step + 1} of 4</p><h2 className="mt-1 text-2xl font-extrabold">{title}</h2><p className="mt-1 text-sm text-[#78867c]">Short, simple, and always with your family’s permission.</p></div><button onClick={close} aria-label="Close onboarding" className="rounded-full bg-[#edf2eb] p-2"><X size={16}/></button></div><div className="my-5 flex gap-1">{[0,1,2,3].map(i=><div key={i} className={`h-1.5 flex-1 rounded-full ${i<=step?'bg-[#294b41]':'bg-[#e4e8df]'}`}/>)}</div>
-    {step === 0 && <div className="grid gap-3 sm:grid-cols-2"><label><Label>{isHindi?'मोबाइल नंबर':'Mobile number'}</Label><input className="field" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+91 98765 43210"/></label><label><Label>One-time code</Label><input className="field" value={otp} onChange={e=>setOtp(e.target.value)} placeholder="Any 6 digits" maxLength={6}/></label><p className="text-xs leading-5 text-[#7b887e] sm:col-span-2">Demo only: enter any 6 digits. No text message is sent.</p></div>}
-    {step === 1 && <div className="grid gap-3 sm:grid-cols-2">{(['Parent','Student'] as Role[]).map(r=><button key={r} onClick={()=>setRole(r)} className={`rounded-2xl border p-5 text-left ${role===r?'border-[#294b41] bg-[#e8eee6]':'border-[#e4e8df]'}`}><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f3e5c6]">{r==='Parent'?<Users size={19}/>:<GraduationCap size={19}/>}</span><strong className="mt-3 block">{r}</strong><span className="mt-1 block text-xs leading-5 text-[#78867c]">{r==='Parent'?'Request visits and stay close to your child’s progress.':'Explore learning and find emotional support.'}</span></button>)}</div>}
-    {step === 2 && role === 'Student' && <div className="grid gap-3 sm:grid-cols-2"><label><Label>Student name</Label><input className="field" value={childName} onChange={e=>setChildName(e.target.value)}/></label><label><Label>Class</Label><select className="field" value={className} onChange={e=>setClassName(e.target.value)}>{Array.from({length:7},(_,i)=><option key={i}>{i+6}</option>)}</select></label><label><Label>Board</Label><select className="field" value={board} onChange={e=>setBoard(e.target.value)}>{boards.map(b=><option key={b}>{b}</option>)}</select></label><label><Label>Medium</Label><select className="field" value={medium} onChange={e=>setMedium(e.target.value)}><option>English</option><option>Hindi</option><option>Odia</option><option>Urdu</option></select></label><label className="sm:col-span-2"><Label>Guardian phone</Label><input className="field" value={guardian} onChange={e=>setGuardian(e.target.value)}/></label></div>}
-    {step === 2 && role === 'Parent' && <div className="grid gap-3 sm:grid-cols-2"><label><Label>Parent name</Label><input className="field" defaultValue="Priya Sharma"/></label><label><Label>Child's name</Label><input className="field" value={childName} onChange={e=>setChildName(e.target.value)}/></label><label><Label>Child's class</Label><select className="field" value={className} onChange={e=>setClassName(e.target.value)}>{Array.from({length:7},(_,i)=><option key={i}>{i+6}</option>)}</select></label><label><Label>Board</Label><select className="field" value={board} onChange={e=>setBoard(e.target.value)}>{boards.map(b=><option key={b}>{b}</option>)}</select></label><p className="text-xs leading-5 text-[#78867c] sm:col-span-2">Add a child now. You can update details later in Parent → Profile.</p></div>}
-    {step === 3 && <div><div className="rounded-2xl bg-[#edf2eb] p-4"><div className="flex items-center gap-2 font-bold"><ShieldCheck size={17}/> Guardian consent & student notice</div><p className="mt-2 text-sm leading-6 text-[#6e7f74]">A parent or guardian reviews the learning details and consents before the free starter pack is unlocked. The child will be told about wellbeing visits before they happen.</p><label className="mt-3 flex items-start gap-2 text-xs leading-5"><input type="checkbox" checked={consentChecked} onChange={e=>setConsentChecked(e.target.checked)}/> I am the parent / guardian and I consent to this demo profile.</label></div><label className="mt-3 block"><Label>Guardian one-time code</Label><input className="field" value={otp} onChange={e=>setOtp(e.target.value)} placeholder="Any 6 digits"/></label><p className="mt-2 text-[11px] text-[#7d8a80]">This simulation accepts any six digits. No OTP is sent.</p></div>}
-    <div className="mt-5 flex items-center justify-between"><Button kind="quiet" onClick={()=>step===0?close():setStep(step-1)}><ArrowLeft size={14}/> Back</Button><Button onClick={()=>{ if (step===3 && !consentChecked) return; next(); }}>{step===3?'Confirm & unlock starter pack':'Continue'}<ArrowRight size={14}/></Button></div><p className="mt-4 text-center text-[10px] text-[#879289]">The starter pack unlocks only after guardian consent: 3 counselling videos · 2 board masterclasses · 3 sample PDFs.</p>
-  </div>;
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h2 className="font-extrabold text-xl">EduCare Onboarding ({step + 1} of 4)</h2>
+          <button onClick={close}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {step === 0 && (
+          <div className="mt-4 space-y-3">
+            <Label>Select Role</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {(['Student', 'Parent'] as Role[]).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRole(r)}
+                  className={`rounded-xl border p-4 text-left ${role === r ? 'border-[#294b41] bg-[#eaf0e7]' : ''}`}
+                >
+                  <strong className="block text-sm">{r}</strong>
+                  <span className="text-xs text-[#718177]">
+                    {r === 'Student' ? 'Learn & get support' : 'Hostel check-ins & reports'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="mt-4 space-y-3">
+            <Label>Mobile Number OTP Verification</Label>
+            <input className="field" placeholder="+91 98765 43210" defaultValue="9876543210" />
+            <input className="field" placeholder="Enter 6-digit OTP" defaultValue="123456" />
+            <p className="text-[11px] text-[#718177]">Demo mode: accepts any 6 digits.</p>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="mt-4 space-y-3">
+            <Label>Select Board & Class</Label>
+            <select className="field">
+              <option>CBSE Board</option>
+              <option>Bihar Board</option>
+              <option>ICSE Board</option>
+            </select>
+            <select className="field">
+              <option>Class 10</option>
+              <option>Class 9</option>
+              <option>Class 11</option>
+            </select>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="mt-4 space-y-3">
+            <div className="rounded-xl bg-[#edf2eb] p-4 text-xs space-y-2">
+              <h3 className="font-bold text-sm">Parent Consent & Child Protection Declaration</h3>
+              <p>Under India DPDP Act guidelines, parent consent is required before minor student profile activation.</p>
+              <label className="flex items-start gap-2 pt-2">
+                <input type="checkbox" checked={consentChecked} onChange={(e) => setConsentChecked(e.target.checked)} />
+                I am the parent / guardian and I give verifiable consent.
+              </label>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-between">
+          {step > 0 ? (
+            <Button kind="quiet" onClick={() => setStep(step - 1)}>
+              Back
+            </Button>
+          ) : (
+            <Button kind="quiet" onClick={close}>
+              Cancel
+            </Button>
+          )}
+          {step < 3 ? (
+            <Button onClick={() => setStep(step + 1)}>Continue</Button>
+          ) : (
+            <Button disabled={!consentChecked} onClick={finishOnboarding}>
+              Unlock Starter Pack
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-const checklistAreas = ['Onboarding','Free tier','Paywall','Academic tabs','Printed orders','Parent visits','Field reports','Live hub','Scholarship','Admin','Safety'];
+/* ==================== CLIENT CONFIRMATION PAGE ==================== */
+
+const checklistAreas = [
+  'Onboarding & Consent Flow',
+  'Free Starter Pack',
+  'Paywall & Entitlements',
+  'Academic Content Taxonomy (6 Boards x 7 Classes)',
+  'Printed Orders & Shipment Tracking',
+  'Parent Physical Visit Requests',
+  'Parent Verified Reports & Watermarking',
+  'Live Hub (Chat, Voice & Video)',
+  'EWS Scholarship Application & Auto-Grant',
+  'Admin Operations & Quality Review',
+  'Safeguarding & Helplines',
+];
+
 function ConfirmPage() {
   const [, navigate] = useLocation();
-  const role = useDemoStore(s => s.role);
-  const entitlement = useDemoStore(s => s.entitlement);
-  const [feedback, setFeedback] = useState<Record<string,{approved:boolean;comments:string}>>(() => {
-    try { return JSON.parse(localStorage.getItem('educare-client-feedback') || '{}'); } catch { return {}; }
+  const role = useDemoStore((s) => s.role);
+  const entitlement = useDemoStore((s) => s.entitlement);
+
+  const [feedback, setFeedback] = useState<Record<string, { approved: boolean; comments: string }>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('educare-client-feedback') || '{}');
+    } catch {
+      return {};
+    }
   });
-  const update = (area: string, patch: Partial<{approved:boolean;comments:string}>) => {
+
+  const update = (area: string, patch: Partial<{ approved: boolean; comments: string }>) => {
     const next = { ...feedback, [area]: { ...(feedback[area] ?? { approved: false, comments: '' }), ...patch } };
     setFeedback(next);
     localStorage.setItem('educare-client-feedback', JSON.stringify(next));
   };
+
   const exportFeedback = () => {
-    const blob = new Blob([JSON.stringify({ product: 'EduCare client demo', exportedAt: new Date().toISOString(), areas: feedback }, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify({ product: 'EduCare Client Prototype Review', exportedAt: new Date().toISOString(), feedback }, null, 2)], {
+      type: 'application/json',
+    });
     const href = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = href; a.download = 'educare-client-feedback.json'; a.click(); URL.revokeObjectURL(href);
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = 'educare-client-feedback.json';
+    a.click();
+    URL.revokeObjectURL(href);
   };
-  return <div className="app-shell min-h-[100dvh]"><header className="border-b border-[#e1e7dd] bg-[#f8f7f0] px-4 py-4 md:px-8"><div className="mx-auto flex max-w-5xl items-center justify-between"><button onClick={()=>navigate('/')} className="flex items-center gap-2 font-[Manrope] text-lg font-extrabold"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#294b41] text-[#f9e9c5]"><HeartHandshake size={19}/></span>EduCare <span className="text-xs font-medium text-[#7c8a80]">Client review</span></button><div className="flex items-center gap-2"><Tag>{role}</Tag><Tag gold>{entitlement}</Tag><Button kind="quiet" onClick={()=>navigate('/')}><ArrowLeft size={14}/> Back to demo</Button></div></div></header><main className="mx-auto max-w-5xl px-4 py-7 md:px-8"><div className="mb-4 rounded-xl bg-[#edf2eb] p-3 text-xs text-[#64796c]">{journey[role]}</div><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="eyebrow">Review together</p><h1 className="mt-1 text-3xl font-extrabold">Client checklist</h1><p className="mt-1 text-sm text-[#758379]">Approve each area and add notes. Feedback stays in this browser until exported.</p></div><Button onClick={exportFeedback}><Download size={15}/> Export feedback JSON</Button></div><div className="space-y-3">{checklistAreas.map(area=><section key={area} className="surface p-4"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-extrabold">{area}</h2><label className="flex items-center gap-2 text-xs font-bold"><input data-testid={`approve-${area.toLowerCase().replaceAll(' ','-')}`} type="checkbox" checked={feedback[area]?.approved || false} onChange={e=>update(area,{approved:e.target.checked})}/> Approved</label></div><textarea className="field mt-3 min-h-16" data-testid={`comments-${area.toLowerCase().replaceAll(' ','-')}`} placeholder={`Comments for ${area.toLowerCase()}…`} value={feedback[area]?.comments || ''} onChange={e=>update(area,{comments:e.target.value})}/></section>)}</div></main></div>;
+
+  return (
+    <div className="app-shell min-h-[100dvh]">
+      <header className="border-b border-[#e1e7dd] bg-[#f8f7f0] px-4 py-4 md:px-8">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
+          <button onClick={() => navigate('/')} className="flex items-center gap-2 font-[Manrope] text-lg font-extrabold">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#294b41] text-[#f9e9c5]">
+              <HeartHandshake size={19} />
+            </span>
+            EduCare <span className="text-xs font-medium text-[#7c8a80]">Client Review Checklist</span>
+          </button>
+          <div className="flex items-center gap-2">
+            <Tag>{role}</Tag>
+            <Tag gold>{entitlement}</Tag>
+            <Button kind="quiet" onClick={() => navigate('/')}>
+              <ArrowLeft size={14} /> Back to Demo
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-5xl px-4 py-7 md:px-8">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="eyebrow">Client Sign-off</p>
+            <h1 className="mt-1 text-3xl font-extrabold">Client Confirmation Checklist</h1>
+            <p className="mt-1 text-sm text-[#758379]">Review each module, record your approval/notes, and export feedback JSON.</p>
+          </div>
+          <Button onClick={exportFeedback}>
+            <Download size={15} /> Download My Feedback as JSON
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          {checklistAreas.map((area) => (
+            <Card key={area}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-extrabold text-base">{area}</h2>
+                <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={feedback[area]?.approved || false}
+                    onChange={(e) => update(area, { approved: e.target.checked })}
+                  />{' '}
+                  Approve Feature
+                </label>
+              </div>
+              <textarea
+                className="field mt-3 min-h-16"
+                placeholder={`Client notes or changes requested for ${area.toLowerCase()}...`}
+                value={feedback[area]?.comments || ''}
+                onChange={(e) => update(area, { comments: e.target.value })}
+              />
+            </Card>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
 }
 
 function Router() {
-  return <Switch><Route path="/" component={AppShell}/><Route path="/confirm" component={ConfirmPage}/><Route> <div className="p-10 text-center"><h1 className="text-2xl font-bold">Page not found</h1><Link href="/" className="mt-4 inline-block underline">Return to EduCare</Link></div></Route></Switch>;
+  return (
+    <Switch>
+      <Route path="/" component={AppShell} />
+      <Route path="/confirm" component={ConfirmPage} />
+      <Route>
+        <div className="p-10 text-center">
+          <h1 className="text-2xl font-bold">Page not found</h1>
+          <Link href="/" className="mt-4 inline-block underline">
+            Return to EduCare Demo
+          </Link>
+        </div>
+      </Route>
+    </Switch>
+  );
 }
-function App() {
-  return <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router/></WouterRouter>;
+
+export default function App() {
+  return (
+    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+      <Router />
+    </WouterRouter>
+  );
 }
-export default App;
