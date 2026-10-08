@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "EduCare Platform Demo"
+description = "A clickable mock-data demo of a student and parent platform for learning, wellbeing, family visit requests, scholarships, and staff workflows."
+version = "1.0.0"
+id = "artifacts/educare-prototype"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21341
+
+[services.development]
+run = "pnpm --filter @workspace/educare-prototype run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/educare-prototype", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/educare-prototype/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21341"
+BASE_PATH = "/"
